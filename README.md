@@ -8,7 +8,7 @@
 <strong>JetShift Core</strong>
 </p>
 
-> JetShift is a powerful and lightweight Python framework for ETL (Extract, Transform, Load) that simplifies building data pipelines.
+> JetShift is a powerful and lightweight ETL framework that simplifies the process of building data pipelines.
 
 ## Intro
 
