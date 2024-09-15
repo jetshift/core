@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-<strong>JetShift</strong>
+<strong>JetShift Core</strong>
 </p>
 
 > JetShift is a powerful and lightweight ETL framework that simplifies the process of building data pipelines.
@@ -20,6 +20,11 @@ Get your data moving swiftly and reliably with JetShift. 🚀
 
 For detailed usage instructions, please refer to the [JetShift Documentation](https://jetshift.vercel.app).
 
+## Linked Repositories
+
+- [JetShift Core](https://github.com/jetshift/core)
+- [JetShift Docs](https://github.com/jetshift/docs)
+
 ## License
 
-The JetShift is open-sourced software licensed under the [MIT license](https://github.com/mdobydullah/jetshift-core/blob/master/LICENSE).
+The JetShift is open-sourced software licensed under the [MIT license](https://github.com/mdobydullah/jetshift/blob/master/LICENSE).
