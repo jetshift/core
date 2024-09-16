@@ -22,7 +22,7 @@ def seeders(items):
         run_seeder()
 
 
-def job(items):
+def jobs(items):
     from jetshift_core.runners.job import main as run_job
     for item in items:
         sys.argv = [__file__, item]

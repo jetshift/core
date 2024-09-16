@@ -22,7 +22,7 @@ For detailed usage instructions, please refer to the [JetShift Documentation](ht
 
 ## Linked Repositories
 
-- [JetShift Core](https://github.com/jetshift/core)
+- [JetShift](https://github.com/jetshift/jetshift)
 - [JetShift Docs](https://github.com/jetshift/docs)
 
 ## License

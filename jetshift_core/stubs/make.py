@@ -3,15 +3,16 @@ import shutil
 import argparse
 from pathlib import Path
 
-from core.helpers.common import to_pascal_case
+from jetshift_core.helpers.common import to_pascal_case
 
 
 def make_migration(engine, new_migration_name):
-    # Get the root directory of the project
-    project_root = Path(__file__).parent.parent.parent
-    stub_dir = os.path.join(project_root, 'core', 'stubs', 'migrations')
+    # Get the directory of stub files
+    stub_root = Path(__file__).parent
+    stub_dir = os.path.join(stub_root, 'migrations')
     stub_path = os.path.join(stub_dir, engine + '.py')
-    migration_path = os.path.join(project_root, 'database', 'migrations', engine, new_migration_name + '.py')
+
+    migration_path = os.path.join(os.getcwd(), 'database', 'migrations', engine, new_migration_name + '.py')
 
     # Check if the specified engine exists in the available engines
     available_engines = [os.path.splitext(f)[0] for f in os.listdir(stub_dir) if f.endswith('.py')]
@@ -43,17 +44,18 @@ def make_migration(engine, new_migration_name):
 
 
 def make_seeder(engine, new_seeder_name):
-    # Get the root directory of the project
-    project_root = Path(__file__).parent.parent.parent
-    stub_dir = os.path.join(project_root, 'core', 'stubs', 'seeders')
-    stub_path = os.path.join(stub_dir, engine + '.py')
-    seeder_path = os.path.join(project_root, 'database', 'seeders', engine, new_seeder_name + '.py')
+    # Get the directory of stub files
+    stub_root = Path(__file__).parent
+    stub_dir = os.path.join(stub_root, 'seeders')
+    stub_path = os.path.join(Path(__file__).parent, 'seeders', engine + '.py')
+
+    seeder_path = os.path.join(os.getcwd(), 'database', 'seeders', engine, new_seeder_name + '.py')
 
     # Check if the specified engine exists in the available engines
-    available_seeders = [os.path.splitext(f)[0] for f in os.listdir(stub_dir) if f.endswith('.py')]
-    if engine not in available_seeders:
-        print(f"Error: The specified seeder '{engine}' does not exist in available seeders.")
-        print(f"Available seeders: {', '.join(available_seeders)}")
+    available_engines = [os.path.splitext(f)[0] for f in os.listdir(stub_dir) if f.endswith('.py')]
+    if engine not in available_engines:
+        print(f"Error: The specified engine '{engine}' does not exist in available engines.")
+        print(f"Available engines: {', '.join(available_engines)}")
         return
 
     # Check if the migration file already exists
@@ -79,11 +81,12 @@ def make_seeder(engine, new_seeder_name):
 
 
 def make_job(new_job_name, jobtype):
-    # Get the root directory of the project
-    project_root = Path(__file__).parent.parent.parent
-    stub_dir = os.path.join(project_root, 'core', 'stubs', 'jobs')
+    # Get the directory of stub files
+    stub_root = Path(__file__).parent
+    stub_dir = os.path.join(stub_root, 'jobs')
     stub_path = os.path.join(stub_dir, jobtype + '.py')
-    job_path = os.path.join(project_root, 'jobs', new_job_name + '.py')
+
+    job_path = os.path.join(os.getcwd(), 'jobs', new_job_name + '.py')
 
     # Check if the specified engine exists in the available engines
     available_job_types = [os.path.splitext(f)[0] for f in os.listdir(stub_dir) if f.endswith('.py')]
@@ -116,11 +119,12 @@ def make_job(new_job_name, jobtype):
 
 
 def make_quicker(new_quicker_name):
-    # Get the root directory of the project
-    project_root = Path(__file__).parent.parent.parent
-    stub_dir = os.path.join(project_root, 'core', 'stubs', 'quickers')
+    # Get the directory of stub files
+    stub_root = Path(__file__).parent
+    stub_dir = os.path.join(stub_root, 'quickers')
     stub_path = os.path.join(stub_dir, 'mix.py')
-    quicker_path = os.path.join(project_root, 'quickers', new_quicker_name + '.py')
+
+    quicker_path = os.path.join(os.getcwd(), 'quickers', new_quicker_name + '.py')
 
     # Check if the migration file already exists
     if os.path.exists(quicker_path):
