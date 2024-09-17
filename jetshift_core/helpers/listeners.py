@@ -1,3 +1,16 @@
+import os
+from dotenv import load_dotenv
+from jetshift_core.helpers.common import run_job_in_new_process, send_discord_message
+import multiprocessing
+from rq import Queue
+from config.database import redis_connection
+from config.logging import logger
+
+
+# Load environment variables
+load_dotenv()
+
+
 def listen(channel, handle_message, timeout=1, poll_interval=0.01):
     import time
     from config.logging import logger
