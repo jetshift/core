@@ -5,6 +5,7 @@ from jetshift_core.helpers.mysql import get_mysql_credentials
 # Initialize the SQLAlchemy metadata
 metadata = MetaData()
 
+
 def get_engine():
     try:
         host, user, password, database = get_mysql_credentials()
@@ -17,15 +18,11 @@ def get_engine():
         print(f"An unexpected error occurred: {e}")
 
 
-def create_table(table):
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("f", nargs='?', default=None, help="Truncate table during migration")
-    args = parser.parse_args()
+def create_table(table, fresh=None):
     engine = get_engine()
 
     # Drop the table if it exists
-    if args.f:
+    if fresh:
         table.drop(engine, checkfirst=True)
 
     if engine is not None:

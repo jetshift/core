@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "jetshift-core"
-version = "1.0.0-alpha.7"
+version = "1.0.0-alpha.8"
 description = "JetShift is a powerful and lightweight ETL framework that simplifies the process of building data pipelines."
 authors = ["Md Obydullah <hi@obydul.me>"]
 readme = "README.md"
@@ -17,6 +17,7 @@ pandas = "2.2.2"
 sqlalchemy = "2.0.34"
 clickhouse-sqlalchemy = "0.3.2"
 faker = "27.4.0"
+click = "^8.1.7"
 
 [build-system]
 requires = ["poetry-core"]

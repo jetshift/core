@@ -10,8 +10,8 @@ table = Table(
 )
 
 
-def main():
-    create_table(table)
+def main(fresh=None):
+    create_table(table, fresh)
 
 
 if __name__ == "__main__":

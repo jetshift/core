@@ -1,6 +1,6 @@
 import sys
 import importlib
-import argparse
+import click
 
 
 def run_quicker(job_name):
@@ -14,21 +14,18 @@ def run_quicker(job_name):
         job_module.main()
 
     except ModuleNotFoundError:
-        print(f"Quicker '{job_name}' not found.")
+        click.echo(f"Quicker '{job_name}' not found.", err=True)
         sys.exit(1)
 
     except AttributeError:
-        print(f"The quicker '{job_name}' does not have a 'main' function.")
+        click.echo(f"The quicker '{job_name}' does not have a 'main' function.", err=True)
         sys.exit(1)
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Run quicker")
-    parser.add_argument("name", help="Name of the quicker")
-
-    args = parser.parse_args()
-
-    run_quicker(args.name)
+@click.command(help="Run the specified quicker by name.")
+@click.argument("name")
+def main(name):
+    run_quicker(name)
 
 
 if __name__ == "__main__":

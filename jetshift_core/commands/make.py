@@ -1,6 +1,6 @@
 import os
 import shutil
-import argparse
+import click
 from pathlib import Path
 
 from jetshift_core.helpers.common import to_pascal_case
@@ -8,7 +8,7 @@ from jetshift_core.helpers.common import to_pascal_case
 
 def make_migration(engine, new_migration_name):
     # Get the directory of stub files
-    stub_root = Path(__file__).parent
+    stub_root = os.path.join(Path(__file__).parent.parent, 'stubs')
     stub_dir = os.path.join(stub_root, 'migrations')
     stub_path = os.path.join(stub_dir, engine + '.py')
 
@@ -45,9 +45,9 @@ def make_migration(engine, new_migration_name):
 
 def make_seeder(engine, new_seeder_name):
     # Get the directory of stub files
-    stub_root = Path(__file__).parent
+    stub_root = os.path.join(Path(__file__).parent.parent, 'stubs')
     stub_dir = os.path.join(stub_root, 'seeders')
-    stub_path = os.path.join(Path(__file__).parent, 'seeders', engine + '.py')
+    stub_path = os.path.join(stub_dir, engine + '.py')
 
     seeder_path = os.path.join(os.getcwd(), 'database', 'seeders', engine, new_seeder_name + '.py')
 
@@ -82,7 +82,7 @@ def make_seeder(engine, new_seeder_name):
 
 def make_job(new_job_name, jobtype):
     # Get the directory of stub files
-    stub_root = Path(__file__).parent
+    stub_root = os.path.join(Path(__file__).parent.parent, 'stubs')
     stub_dir = os.path.join(stub_root, 'jobs')
     stub_path = os.path.join(stub_dir, jobtype + '.py')
 
@@ -120,7 +120,7 @@ def make_job(new_job_name, jobtype):
 
 def make_quicker(new_quicker_name):
     # Get the directory of stub files
-    stub_root = Path(__file__).parent
+    stub_root = os.path.join(Path(__file__).parent.parent, 'stubs')
     stub_dir = os.path.join(stub_root, 'quickers')
     stub_path = os.path.join(stub_dir, 'mix.py')
 
@@ -145,35 +145,26 @@ def make_quicker(new_quicker_name):
     print(f"Quicker {new_quicker_name} created successfully.")
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Create from stubs")
-    parser.add_argument("type", help="Name of the type (e.g., 'migration', 'seeder', 'job)")
-    parser.add_argument("name", help="Name of the new file")
-
-    # Optional argument with a default value
-    parser.add_argument(
-        "-e", "--engine",
-        help="Name of the engine (e.g., 'mysql', 'clickhouse'). Default is 'mysql'.",
-        default="mysql"
-    )
-    parser.add_argument(
-        "-jt", "--jobtype",
-        help="Type of the job (e.g., 'simple', 'mysql_clickhouse'). Default is 'simple'.",
-        default="simple"
-    )
-
-    args = parser.parse_args()
-
-    if args.type == "migration":
-        make_migration(args.engine, args.name)
-    elif args.type == "seeder":
-        make_seeder(args.engine, args.name)
-    elif args.type == "job":
-        make_job(args.name, args.jobtype)
-    elif args.type == "quicker":
-        make_quicker(args.name)
+@click.command(help="Make a new migration, seeder, job, or quicker.")
+@click.argument("type")
+@click.argument("name")
+@click.option(
+    "-e", "--engine", default="mysql", help="Name of the engine (e.g., 'mysql', 'clickhouse'). Default is 'mysql'."
+)
+@click.option(
+    "-jt", "--jobtype", default="simple", help="Type of the job (e.g., 'simple', 'mysql_clickhouse'). Default is 'simple'."
+)
+def main(type, name, engine, jobtype):
+    if type == "migration":
+        make_migration(engine, name)
+    elif type == "seeder":
+        make_seeder(engine, name)
+    elif type == "job":
+        make_job(name, jobtype)
+    elif type == "quicker":
+        make_quicker(name)
     else:
-        print("Invalid type. Must be 'migration', 'seeder' or 'job'")
+        click.echo("Invalid type. Must be 'migration', 'seeder', 'job', or 'quicker'.")
 
 
 if __name__ == "__main__":

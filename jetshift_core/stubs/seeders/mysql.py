@@ -1,15 +1,9 @@
-import argparse
+import click
 from faker import Faker
-
 from jetshift_core.helpers.mysql import mysql_connect
 
-# Initialize Faker
 fake = Faker()
-
-# Database connection
 connection = mysql_connect()
-
-# Table name
 table_name = 'the_table_name'
 
 
@@ -38,14 +32,12 @@ def seed_table(num_records):
     connection.commit()
 
 
-def main(*args):
-    parser = argparse.ArgumentParser(description="Seed with fake data.")
-    parser.add_argument('-n', '--num', type=int, help="Number of records to seed", default=50)
-    args = parser.parse_args(args)
-
-    seed_table(args.num)  # Seed the specified number of records
+@click.command()
+@click.argument('records', required=False, default=10)
+def main(records):
+    seed_table(records)
     connection.close()
-    print(f"Seeding completed. {args.num} records inserted.")
+    print(f"Seeding completed. {records} records inserted to table {table_name}.")
 
 
 if __name__ == "__main__":
