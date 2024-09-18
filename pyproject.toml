@@ -4,8 +4,8 @@ version = "1.0.0-alpha.9"
 description = "JetShift is a powerful and lightweight ETL framework that simplifies the process of building data pipelines."
 authors = ["Md Obydullah <hi@obydul.me>"]
 readme = "README.md"
-repository = "https://github.com/mdobydullah/jetshift-core"
-homepage = "https://github.com/mdobydullah/jetshift-core"
+repository = "https://github.com/jetshift/core.git"
+homepage = "https://jetshift.vercel.app"
 
 [tool.poetry.dependencies]
 python = "^3.9"
