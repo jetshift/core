@@ -1,7 +1,8 @@
 import click
 import sys
-import importlib.metadata
 from config.logging import logger
+
+from jetshift_core.commands.banners import banner
 from jetshift_core.commands.dev import main as dev_main
 from jetshift_core.commands.make import main as make
 from jetshift_core.commands.migration import main as migration
@@ -9,13 +10,7 @@ from jetshift_core.commands.seeder import main as seeder
 from jetshift_core.commands.job import main as job
 from jetshift_core.commands.quicker import main as quicker
 from jetshift_core.commands.listener import main as listener
-
-# Banner ASCII art
-banner = """
-░░░▒█ █▀▀ ▀▀█▀▀ ▒█▀▀▀█ █░░█ ░▀░ █▀▀ ▀▀█▀▀ 
-░▄░▒█ █▀▀ ░░█░░ ░▀▀▀▄▄ █▀▀█ ▀█▀ █▀▀ ░░█░░ 
-▒█▄▄█ ▀▀▀ ░░▀░░ ▒█▄▄▄█ ▀░░▀ ▀▀▀ ▀░░ ░░▀░░
-"""
+from jetshift_core.commands.version import show_version
 
 
 @click.group(invoke_without_command=True)
@@ -23,7 +18,8 @@ banner = """
 def cli(ctx):
     """A command-line interface for JetShift."""
     if ctx.invoked_subcommand is None:
-        click.echo(banner)
+        click.echo(banner())
+        click.echo(show_version())
 
         #  Commands
         click.echo("Commands:")
@@ -35,15 +31,6 @@ def cli(ctx):
         pass
 
 
-@click.command(help='Show the current version of JetShift.')
-def show_version():
-    try:
-        version = importlib.metadata.version("jetshift-core")
-        click.echo(f"JetShift v{version}")
-    except (FileNotFoundError, KeyError) as e:
-        click.echo(f"Error reading version: {e}", err=True)
-
-
 # Register Commands
 cli.add_command(dev_main, name="dev")
 cli.add_command(make, name="make")
@@ -52,7 +39,6 @@ cli.add_command(seeder, name="seed")
 cli.add_command(job, name="job")
 cli.add_command(quicker, name="quick")
 cli.add_command(listener, name="listen")
-cli.add_command(show_version, name="version")
 
 
 # Main entry point

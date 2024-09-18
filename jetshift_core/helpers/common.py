@@ -65,14 +65,14 @@ def send_discord_message(message):
     import json
     from dotenv import load_dotenv
     load_dotenv()
-    
+
     if len(message) == 0:
         return None
 
     secrets_json = os.environ.get('SECRETS_JSON')
     if secrets_json:
         secrets = json.loads(secrets_json)
-        webhook_url = secrets.get('webhook_url')
+        webhook_url = secrets.get('DISCORD_WEBHOOK')
     else:
         webhook_url = os.environ.get('DISCORD_WEBHOOK')
 

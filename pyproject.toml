@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "jetshift-core"
-version = "1.0.0-alpha.8"
+version = "1.0.0-alpha.9"
 description = "JetShift is a powerful and lightweight ETL framework that simplifies the process of building data pipelines."
 authors = ["Md Obydullah <hi@obydul.me>"]
 readme = "README.md"
