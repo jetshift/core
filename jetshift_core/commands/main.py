@@ -1,5 +1,6 @@
 import click
 import sys
+import importlib.metadata
 from config.logging import logger
 from jetshift_core.commands.dev import main as dev_main
 from jetshift_core.commands.make import main as make
@@ -34,6 +35,15 @@ def cli(ctx):
         pass
 
 
+@click.command(help='Show the current version of JetShift.')
+def show_version():
+    try:
+        version = importlib.metadata.version("jetshift-core")
+        click.echo(f"JetShift v{version}")
+    except (FileNotFoundError, KeyError) as e:
+        click.echo(f"Error reading version: {e}", err=True)
+
+
 # Register Commands
 cli.add_command(dev_main, name="dev")
 cli.add_command(make, name="make")
@@ -42,6 +52,7 @@ cli.add_command(seeder, name="seed")
 cli.add_command(job, name="job")
 cli.add_command(quicker, name="quick")
 cli.add_command(listener, name="listen")
+cli.add_command(show_version, name="version")
 
 
 # Main entry point
