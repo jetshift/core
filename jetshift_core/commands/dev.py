@@ -1,12 +1,12 @@
-import subprocess
 import click
+from jetshift_core.helpers.dev import dev_env
 
 
 @click.command(help="Run the dev environment.")
-def main():
+@click.argument("reset_port", required=False, default=None)
+def main(reset_port=None):
     try:
-        # Use 'bash' instead of 'sh' if required for your shell
-        subprocess.call(['sh', 'entrypoint-dev.sh'])
+        dev_env(reset_port)
     except FileNotFoundError:
         click.echo("The script 'entrypoint-dev.sh' was not found.", err=True)
     except PermissionError:
