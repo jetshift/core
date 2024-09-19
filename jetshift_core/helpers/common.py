@@ -1,5 +1,8 @@
 import os
 import requests
+import importlib
+import multiprocessing
+from config.logging import logger
 
 
 def create_data_directory():
@@ -89,10 +92,6 @@ def send_discord_message(message):
 
 
 def run_job_in_new_process(module_name):
-    import importlib
-    import multiprocessing
-    from config.logging import logger
-
     try:
         job_module = importlib.import_module(module_name)
         if hasattr(job_module, 'main'):
@@ -105,6 +104,17 @@ def run_job_in_new_process(module_name):
     except Exception as e:
         logger.error(f"Error running main function in module {module_name}: {e}")
     return False
+
+
+def run_multi_process(function_to_call, *params):
+    logger.info(f"Running function: {function_to_call.__name__} with params: {params}")
+
+    try:
+        p = multiprocessing.Process(target=function_to_call, args=params)
+        p.start()
+        logger.info("Process started successfully.")
+    except Exception as e:
+        logger.error(f"An error occurred while running the process: {str(e)}")
 
 
 # Reflect database structure from file
