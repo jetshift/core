@@ -98,7 +98,6 @@ def fetch_and_extract(engine, table_name, output_path, table_fields, limit):
     from jetshift_core.helpers.clcikhouse import get_last_id_from_clickhouse
 
     last_id = get_last_id_from_clickhouse(table_name)
-    print()
     print(f'Last ClickHouse {table_name} id: ', last_id)
 
     query = f"SELECT {', '.join(table_fields)} FROM {table_name} WHERE id > {last_id} LIMIT {limit}"

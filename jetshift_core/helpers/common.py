@@ -58,8 +58,6 @@ def ClearFiles(table_name):
             os.remove(path)
             print(f"Deleted: {path}")
 
-    print()
-
 
 def send_discord_message(message):
     import json

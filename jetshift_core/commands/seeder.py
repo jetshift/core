@@ -2,13 +2,13 @@ import sys
 import importlib
 import os
 import click
-from pathlib import Path
+from click.testing import CliRunner
 
 
 def run_seeder(seeder_engine, seeder_name, records):
-    from click.testing import CliRunner
-
     try:
+        click.echo(f"Running seeder: {seeder_name}")
+
         # Dynamically import the seeder module
         module_path = f"database.seeders.{seeder_engine}.{seeder_name}"
         seeder_module = importlib.import_module(module_path)
@@ -43,7 +43,6 @@ def main(engine, seeder, n):
         for filename in os.listdir(seeders_dir):
             if filename.endswith(".py") and filename != "__init__.py":
                 seeder_name = filename[:-3]  # Remove .py extension
-                click.echo(f"Running seeder: {seeder_name}")
                 run_seeder(engine, seeder_name, n)
     else:
         run_seeder(engine, seeder, n)

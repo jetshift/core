@@ -1,4 +1,3 @@
-import sys
 import click
 from click.testing import CliRunner
 
@@ -9,7 +8,7 @@ def migrations(engines):
     from jetshift_core.commands.migration import main as run_migration
     for engine in engines:
         # Simulate invoking the click command with command-line arguments
-        result = runner.invoke(run_migration, [engine, 'users', 'f'])
+        result = runner.invoke(run_migration, [engine, '', 'f'])
         click.echo(result.output)
 
 
@@ -30,5 +29,5 @@ def seeders(items):
 def jobs(items):
     from jetshift_core.commands.job import main as run_job
     for item in items:
-        sys.argv = [__file__, item]
-        run_job()
+        result = runner.invoke(run_job, [item])
+        click.echo(result.output)
