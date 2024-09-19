@@ -15,7 +15,7 @@ cron_job = os.environ.get('CRON_JOB', False)
 job_queue = os.environ.get('JOB_QUEUE', False)
 redis_ssl = os.environ.get('REDIS_SSL', False)
 redis_host = os.environ.get('REDIS_HOST')
-redis_port = os.environ.get('REDIS_PORT')
+redis_port = os.environ.get('REDIS_PORT', 6379)
 redis_password = os.environ.get('REDIS_PASSWORD')
 
 
