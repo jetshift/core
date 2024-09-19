@@ -9,7 +9,7 @@ load_dotenv()
 
 # Environment variables
 app_env = os.environ.get('APP_ENV', 'development')
-web_port = os.environ.get('WEB_PORT', 8080)
+app_port = os.environ.get('APP_PORT', 8080)
 luigi_port = os.environ.get('LUIGI_PORT', 8082)
 cron_job = os.environ.get('CRON_JOB', False)
 job_queue = os.environ.get('JOB_QUEUE', False)
@@ -97,9 +97,9 @@ def dev_env(reset_port=None):
 
         # Start the Flask app with Waitress
         if app_env == 'development':
-            process = start_subprocess(['flask', 'run', '--host=0.0.0.0', '--port', str(web_port), '--reload'], 'web app', int(web_port), reset_port)
+            process = start_subprocess(['flask', 'run', '--host=0.0.0.0', '--port', str(app_port), '--reload'], 'web app', int(app_port), reset_port)
         else:
-            process = start_subprocess(['waitress-serve', '--host=0.0.0.0', '--port', str(web_port), 'web.main:app'], 'web app', int(web_port), reset_port)
+            process = start_subprocess(['waitress-serve', '--host=0.0.0.0', '--port', str(app_port), 'web.main:app'], 'web app', int(app_port), reset_port)
         if process:
             processes.append(process)
 
