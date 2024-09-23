@@ -1,21 +1,14 @@
 import click
 from faker import Faker
-from jetshift_core.helpers.mysql import mysql_connect
+from jetshift_core.helpers.mysql import mysql_connect, get_last_id, get_min_max_id
 
 fake = Faker()
 connection = mysql_connect()
 table_name = 'the_table_name'
 
 
-def get_last_id():
-    with connection.cursor() as cursor:
-        cursor.execute(f"SELECT MAX(id) FROM {table_name}")
-        result = cursor.fetchone()
-        return result[0] if result[0] is not None else 0
-
-
 def seed_table(num_records):
-    last_id = get_last_id()
+    last_id = get_last_id(table_name)
 
     with connection.cursor() as cursor:
         for i in range(1, num_records + 1):

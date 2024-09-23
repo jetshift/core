@@ -1,4 +1,4 @@
-from config.luigi import luigi
+from config.luigi import luigi, local_scheduler
 from jetshift_core.tasks.mysql_clickhouse_truncate_insert import BaseTask
 
 
@@ -7,7 +7,7 @@ class job_class_name(BaseTask):
 
 
 def main():
-    luigi.build([job_class_name(limit=10, chunk_size=5)], local_scheduler=True)
+    luigi.build([job_class_name(limit=10, chunk_size=5)], local_scheduler=local_scheduler)
 
 
 if __name__ == '__main__':
