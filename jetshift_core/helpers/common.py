@@ -29,7 +29,9 @@ def format_csv_data(df, fields):
             # print(f"value: {value}")
             # print()
 
-            if pd.isna(value):
+            if field_type == int and pd.isna(value):
+                formatted_value = 0
+            elif pd.isna(value):
                 # Set the formatted value to None to represent NULL in ClickHouse
                 formatted_value = None
             else:
