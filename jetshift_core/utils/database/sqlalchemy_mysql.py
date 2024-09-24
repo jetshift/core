@@ -24,12 +24,12 @@ def create_table(table, fresh=None):
     # Drop the table if it exists
     if fresh:
         table.drop(engine, checkfirst=True)
+        print(f"Dropped table: {table.name}")
 
     if engine is not None:
         try:
             metadata.create_all(engine)
-            print("MySQL table created successfully!")
         except SQLAlchemyError as e:
-            print(f"MySQL SQLAlchemy error during table creation: {e}")
+            print(f"MySQL SQLAlchemy error during table '{table.name}' creation: {e}")
         except Exception as e:
-            print(f"An unexpected error occurred during MySQL table creation: {e}")
+            print(f"An unexpected error occurred during MySQL table '{table.name}' creation: {e}")

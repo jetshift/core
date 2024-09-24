@@ -3,7 +3,7 @@ import shutil
 import click
 from pathlib import Path
 
-from jetshift_core.helpers.common import to_pascal_case
+from jetshift_core.helpers.common import to_pascal_case, jprint
 
 
 def make_migration(engine, new_migration_name):
@@ -17,13 +17,14 @@ def make_migration(engine, new_migration_name):
     # Check if the specified engine exists in the available engines
     available_engines = [os.path.splitext(f)[0] for f in os.listdir(stub_dir) if f.endswith('.py')]
     if engine not in available_engines:
-        print(f"Error: The specified engine '{engine}' does not exist in available engines.")
-        print(f"Available engines: {', '.join(available_engines)}")
+        error_msg = f"The specified engine '{engine}' does not exist in available engines. Available engines: {', '.join(available_engines)}"
+        jprint(error_msg, 'error')
         return
 
     # Check if the migration file already exists
     if os.path.exists(migration_path):
-        print(f"Migration '{new_migration_name}' already exists at. Please choose a different name.")
+        error_msg = f"Migration [{migration_path}] already exists."
+        jprint(error_msg, 'error')
         return
 
     # Copy stub file to new location
@@ -40,7 +41,8 @@ def make_migration(engine, new_migration_name):
     with open(migration_path, 'w') as file:
         file.write(content)
 
-    print(f"Migration {new_migration_name} created successfully.")
+    success_msg = f"Migration [{migration_path}] created successfully."
+    jprint(success_msg, 'info')
 
 
 def make_seeder(engine, new_seeder_name):
@@ -54,13 +56,13 @@ def make_seeder(engine, new_seeder_name):
     # Check if the specified engine exists in the available engines
     available_engines = [os.path.splitext(f)[0] for f in os.listdir(stub_dir) if f.endswith('.py')]
     if engine not in available_engines:
-        print(f"Error: The specified engine '{engine}' does not exist in available engines.")
-        print(f"Available engines: {', '.join(available_engines)}")
+        error_msg = f"The specified engine '{engine}' does not exist in available engines. Available engines: {', '.join(available_engines)}"
+        jprint(error_msg, 'error')
         return
 
     # Check if the migration file already exists
     if os.path.exists(seeder_path):
-        print(f"Seeder '{new_seeder_name}' already exists at. Please choose a different name.")
+        jprint(f"Seeder [{seeder_path}] already exists.", 'error')
         return
 
     # Copy stub file to new location
@@ -77,7 +79,7 @@ def make_seeder(engine, new_seeder_name):
     with open(seeder_path, 'w') as file:
         file.write(content)
 
-    print(f"Seeder '{new_seeder_name}' created successfully.")
+    jprint(f"Seeder [{seeder_path}] created successfully.", 'info')
 
 
 def make_job(new_job_name, jobtype):
@@ -91,13 +93,13 @@ def make_job(new_job_name, jobtype):
     # Check if the specified engine exists in the available engines
     available_job_types = [os.path.splitext(f)[0] for f in os.listdir(stub_dir) if f.endswith('.py')]
     if jobtype not in available_job_types:
-        print(f"Error: The specified job type '{jobtype}' does not exist in available job types.")
-        print(f"Available job types: {', '.join(available_job_types)}")
+        error_msg = f"The specified job type '{jobtype}' does not exist in available job types. Available job types: {', '.join(available_job_types)}"
+        jprint(error_msg, 'error')
         return
 
     # Check if the migration file already exists
     if os.path.exists(job_path):
-        print(f"Job '{new_job_name}' already exists. Please choose a different name.")
+        jprint(f"Job [{job_path}] already exists.", 'error')
         return
 
     # Copy stub file to new location
@@ -115,7 +117,7 @@ def make_job(new_job_name, jobtype):
     with open(job_path, 'w') as file:
         file.write(content)
 
-    print(f"Job {new_job_name} created successfully.")
+    jprint(f"Job [{job_path}] created successfully.", 'info')
 
 
 def make_quicker(new_quicker_name):
@@ -128,7 +130,7 @@ def make_quicker(new_quicker_name):
 
     # Check if the migration file already exists
     if os.path.exists(quicker_path):
-        print(f"Quicker '{new_quicker_name}' already exists. Please choose a different name.")
+        jprint(f"Quicker [{quicker_path}] already exists.", 'error')
         return
 
     # Copy stub file to new location
@@ -142,7 +144,7 @@ def make_quicker(new_quicker_name):
     with open(quicker_path, 'w') as file:
         file.write(content)
 
-    print(f"Quicker {new_quicker_name} created successfully.")
+    jprint(f"Quicker [{quicker_path}] created successfully.", 'info')
 
 
 @click.command(help="Make a new migration, seeder, job, or quicker.")

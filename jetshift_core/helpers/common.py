@@ -5,6 +5,24 @@ import multiprocessing
 from config.logging import logger
 
 
+def jprint(message, type='info', all=False, key=None):
+    import click
+
+    # Map message types to corresponding labels and colors
+    type_map = {
+        'info': (f"{key or 'INFO '} ", 'blue'),
+        'success': (f"{key or 'SUCCESS '} ", 'green'),
+        'error': (f"{key or 'ERROR '} ", 'red')
+    }
+
+    label, color = type_map.get(type, ('INFO ', 'blue'))  # Default to 'info' type
+
+    if all:
+        click.echo(click.style(message + '\n', fg=color), err=(type == 'error'))
+    else:
+        click.echo(click.style(label, fg=color) + message + '\n', err=(type == 'error'))
+
+
 def create_data_directory():
     data_folder_path = os.path.abspath('data')
     if not os.path.exists(data_folder_path):
@@ -57,11 +75,9 @@ def ClearFiles(table_name):
         f"data/transformed_{table_name}.csv"
     ]
 
-    print(f"Clearing files: {paths}")
     for path in paths:
         if os.path.exists(path):
             os.remove(path)
-            print(f"Deleted: {path}")
 
 
 def send_discord_message(message):

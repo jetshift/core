@@ -77,11 +77,11 @@ class BaseTask(luigi.Task):
         # Send Discord message
         if num_rows > 0:
             if last_inserted_id is not None:
-                send_discord_message(f'{self.table_name}: Inserted {num_rows} rows. Last inserted id {last_inserted_id}')
+                send_discord_message(f'{self.table_name}: Inserted {num_rows} rows. Last id {last_inserted_id}')
             else:
                 send_discord_message(f'{self.table_name}: Inserted {num_rows} rows')
 
-            print(f'{self.table_name}: Inserted {num_rows} rows. Last inserted id {last_inserted_id}')
+            print(f'{self.table_name}: Inserted {num_rows} rows. Last id {last_inserted_id}')
 
     def run(self):
         # Step 1: Extract data from RDS

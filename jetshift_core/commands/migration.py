@@ -31,13 +31,13 @@ def run_migration(engine, migration_name, fresh):
         sys.exit(1)
 
     try:
-        click.echo(f"Migrating: {migration_name} table")
+        click.echo(f"Migrating table: {migration_name}")
         migration_module = importlib.import_module(module_path)
 
         # Call the Click command directly as a function, passing 'fresh' as an argument
         migration_module.main(fresh)
 
-        click.echo(f"Migrated: {migration_name} table")
+        click.echo(f"Migrated table: {migration_name}")
         click.echo("-----")
 
     except ModuleNotFoundError:
@@ -61,10 +61,14 @@ def run_all_migrations(engine, fresh):
 
 
 @click.command(help="Run migrations for a specified database engine.")
-@click.argument("engine")
 @click.argument("migration", required=False, default=None)
-@click.argument("fresh", required=False, default=None)
-def main(engine, migration, fresh):
+@click.option(
+    "-e", "--engine", default="mysql", help="Name of the engine (e.g., 'mysql', 'clickhouse'). Default is 'mysql'."
+)
+@click.option(
+    "-f", "--fresh", is_flag=True, help="Truncate the table before running the migration."
+)
+def main(migration, engine, fresh):
     click.echo(f"Running migrations for engine '{engine}'")
     click.echo("----------")
 

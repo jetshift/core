@@ -7,8 +7,7 @@ runner = CliRunner()
 def migrations(engines):
     from jetshift_core.commands.migration import main as run_migration
     for engine in engines:
-        # Simulate invoking the click command with command-line arguments
-        result = runner.invoke(run_migration, [engine, '', 'f'])
+        result = runner.invoke(run_migration, ['--engine', engine, '--fresh'])
         click.echo(result.output)
 
 

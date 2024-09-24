@@ -29,11 +29,11 @@ def create_table(table, fresh=None):
     # Drop the table if it exists
     if fresh:
         table.drop(engine, checkfirst=True)
+        print(f"Dropped table: {table.name}")
 
     if engine is not None:
         try:
             metadata.create_all(engine)
-            print("ClickHouse table created successfully!")
         except SQLAlchemyError as e:
             print(f"ClickHouse SQLAlchemy error during table creation: {e}")
         except Exception as e:
