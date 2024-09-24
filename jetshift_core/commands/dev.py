@@ -1,18 +1,29 @@
 import click
-from jetshift_core.helpers.dev import dev_env
+from jetshift_core.helpers.dev import *
+from jetshift_core.helpers.common import jprint
 
 
 @click.command(help="Run the dev environment.")
-@click.argument("reset_port", required=False, default=None)
-def main(reset_port=None):
+@click.option(
+    "-b", "--background", is_flag=True, help="Run the environment in the background."
+)
+@click.option(
+    "-r", "--reset", is_flag=True, help="Reset the ports if it is already in use."
+)
+@click.option(
+    "-c", "--close", is_flag=True, help="Close the running ports."
+)
+def main(background, reset, close):
     try:
-        dev_env(reset_port)
-    except FileNotFoundError:
-        click.echo("The script 'entrypoint-dev.sh' was not found.", err=True)
+        if close:
+            close_all_ports()
+            return
+
+        dev_env(background, reset)
     except PermissionError:
-        click.echo("Permission denied: 'entrypoint-dev.sh' does not have executable permissions.", err=True)
+        jprint("Permission denied: 'entrypoint-dev.sh' does not have executable permissions.", 'error')
     except Exception as e:
-        click.echo(f"An error occurred: {e}", err=True)
+        jprint(f"An error occurred: {e}", 'error')
 
 
 if __name__ == "__main__":

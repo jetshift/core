@@ -166,7 +166,7 @@ def main(type, name, engine, jobtype):
     elif type == "quicker":
         make_quicker(name)
     else:
-        click.echo("Invalid type. Must be 'migration', 'seeder', 'job', or 'quicker'.")
+        jprint("Invalid make type. Must be 'migration', 'seeder', 'job', or 'quicker'.", 'error')
 
 
 if __name__ == "__main__":

@@ -2,8 +2,9 @@ import os
 import signal
 import subprocess
 import socket
-
 from dotenv import load_dotenv
+
+from jetshift_core.helpers.common import jprint
 
 load_dotenv()
 
@@ -23,7 +24,6 @@ def find_process_using_port(port):
     result = subprocess.run(['lsof', '-i', f':{port}'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     lines = result.stdout.splitlines()
     if len(lines) > 1:
-        # The second line contains the process information
         process_info = lines[1].split()
         pid = int(process_info[1])
         return pid
@@ -35,7 +35,7 @@ def kill_process(pid):
         os.kill(pid, signal.SIGKILL)
         print(f"Process {pid} terminated")
     except OSError as e:
-        print(f"Error terminating process {pid}: {e}")
+        jprint(f"Error terminating process {pid}: {e}", 'error')
 
 
 def is_port_open(host, port):
@@ -49,7 +49,7 @@ def is_port_open(host, port):
         return False
 
 
-def start_subprocess(command, description, port=None, reset_port=None):
+def start_subprocess(command, description, port=None, reset_port=False):
     try:
         print(f"Starting {description}")
 
@@ -70,13 +70,13 @@ def start_subprocess(command, description, port=None, reset_port=None):
         print(f"Started {description} on port {port}\n")
         return open_process
     except FileNotFoundError as e:
-        print(f"Command not found: {command[0]}\n")
+        jprint(f"Command not found: {command[0]}", 'error')
     except subprocess.SubprocessError as e:
-        print(f"Failed to start {description}: {e}\n")
+        jprint(f"Failed to start {description}: {e}", 'error')
         return None
 
 
-def dev_env(reset_port=None):
+def dev_env(background=False, reset_port=False):
     processes = []
 
     start_cron_job = str(cron_job).strip().lower() == 'true'
@@ -117,8 +117,9 @@ def dev_env(reset_port=None):
                 processes.append(process)
 
         # Wait for all background processes to finish
-        for process in processes:
-            process.wait()
+        if not background:
+            for process in processes:
+                process.wait()
 
     except KeyboardInterrupt:
         print("Terminating all subprocesses...")
@@ -129,5 +130,21 @@ def dev_env(reset_port=None):
         print("All subprocesses terminated.")
 
 
+def close_all_ports():
+    try:
+        ports = [app_port, luigi_port, redis_port]
+
+        for port in ports:
+            port_open = is_port_open('localhost', int(port))
+            if port_open:
+                pid = find_process_using_port(port)
+                if pid:
+                    kill_process(pid)
+
+        jprint("All running ports closed.", 'success')
+    except Exception as e:
+        jprint(f"An error occurred: {e}", 'error')
+
+
 if __name__ == '__main__':
-    dev_env(reset_port=None)
+    dev_env(background=False, reset_port=False)

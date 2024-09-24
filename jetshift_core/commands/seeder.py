@@ -28,9 +28,11 @@ def run_seeder(seeder_engine, seeder_name, records):
 
 
 @click.command(help="Run seeders for a specified engine. You can run a specific seeder or all seeders in a engine.")
-@click.argument("engine")
 @click.argument("seeder", required=False, default=None)
-@click.option("-n", default=10, help="Specify an optional number parameter.")
+@click.option(
+    "-e", "--engine", default="mysql", help="Name of the engine (e.g., 'mysql', 'clickhouse'). Default is 'mysql'."
+)
+@click.option("-n", default=10, help="Number of records to seed. Default is 10.")
 def main(engine, seeder, n):
     if seeder is None:
         # Get the root directory of the project
