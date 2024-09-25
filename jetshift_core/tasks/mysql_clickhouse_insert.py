@@ -13,7 +13,7 @@ class BaseTask(luigi.Task):
     table_name = luigi.Parameter()
     truncate_table = luigi.BoolParameter(default=False)
     live_schema = luigi.BoolParameter(default=False)
-    primary_id_column = luigi.Parameter(default='')
+    primary_id = luigi.Parameter(default='')
 
     extract_offset = luigi.IntParameter(default=0)
     extract_limit = luigi.IntParameter(default=0)
@@ -70,6 +70,11 @@ class BaseTask(luigi.Task):
         input_file = self.output()['extracted'].path
         fields, table_fields = self.get_fields()
 
+        # check input_file has exists
+        if not os.path.exists(input_file):
+            print(f'No data to load for {self.table_name}')
+            return False
+
         num_rows = 0
         last_inserted_id = None
 
@@ -78,6 +83,7 @@ class BaseTask(luigi.Task):
         # print()
 
         # Load CSV in chunks
+        print(f'\nLoading data into ClickHouse...')
         for chunk in pd.read_csv(input_file, chunksize=self.load_chunk_size):
             data = format_csv_data(chunk, fields)  # Assuming format_csv_data can handle DataFrame input
 
@@ -85,6 +91,7 @@ class BaseTask(luigi.Task):
             success, last_inserted_id = insert_into_clickhouse(self.table_name, table_fields, data)
             if success:
                 num_rows += len(data)
+                print(f'Inserted {len(data)} rows into {self.table_name}. Last ID {last_inserted_id}')
 
             # Sleep for a specified interval to manage load
             time.sleep(self.sleep_interval)
@@ -96,7 +103,7 @@ class BaseTask(luigi.Task):
             else:
                 send_discord_message(f'{self.table_name}: Inserted {num_rows} rows')
 
-            print(f'{self.table_name}: Inserted {num_rows} rows. Last id {last_inserted_id}')
+            print(f'---------\nTotal inserted {num_rows} rows into {self.table_name}. Last ID {last_inserted_id}')
 
     def run(self):
         print('Running job: ', self.get_task_family())

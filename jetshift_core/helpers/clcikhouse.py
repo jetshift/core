@@ -65,9 +65,9 @@ def ping_clickhouse():
         }
 
 
-def get_last_id_from_clickhouse(table_name, id_column='id'):
+def get_last_id_from_clickhouse(table_name, primary_id='id'):
     clickhouse = clickhouse_client()
-    data = clickhouse.execute(f"SELECT {id_column} FROM {table_name} ORDER BY {id_column} DESC LIMIT 1")
+    data = clickhouse.execute(f"SELECT {primary_id} FROM {table_name} ORDER BY {primary_id} DESC LIMIT 1")
     clickhouse.disconnect_connection()
     return int(data[0][0]) if data else 0
 

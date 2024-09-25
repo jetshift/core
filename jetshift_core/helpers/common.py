@@ -124,6 +124,23 @@ def run_job_in_new_process(module_name):
     return False
 
 
+def run_command_subprocess(command):
+    import click
+    import subprocess
+    try:
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1, text=True, universal_newlines=True)
+
+        # Read stdout line by line as it becomes available
+        for line in process.stdout:
+            click.echo(line, nl=False)
+
+        process.stdout.close()
+        process.wait()
+    except Exception as e:
+        logger.error(f"Error running command {command}: {e}")
+    return False
+
+
 def run_multi_process(function_to_call, *params):
     logger.info(f"Running function: {function_to_call.__name__} with params: {params}")
 

@@ -2,10 +2,12 @@ import sys
 import importlib
 import os
 import click
-from click.testing import CliRunner
+
+from jetshift_core.helpers.common import run_command_subprocess
 
 
 def run_seeder(seeder_engine, seeder_name, records):
+    # from click.testing import CliRunner
     try:
         click.echo(f"Running seeder: {seeder_name}")
 
@@ -14,9 +16,12 @@ def run_seeder(seeder_engine, seeder_name, records):
         seeder_module = importlib.import_module(module_path)
 
         # Simulate invoking the click command with command-line arguments
-        runner = CliRunner()
-        result = runner.invoke(seeder_module.main, [str(records)])
-        click.echo(result.output)
+        # runner = CliRunner()
+        # result = runner.invoke(seeder_module.main, [str(records)])
+        # click.echo(result.output)
+
+        command = [sys.executable, '-m', module_path, str(records)]
+        run_command_subprocess(command)
 
     except ModuleNotFoundError:
         click.echo(f"Seeder '{seeder_name}' not found. Please check the seeder engine.", err=True)

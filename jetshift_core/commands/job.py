@@ -2,6 +2,8 @@ import sys
 import importlib
 import click
 
+from jetshift_core.helpers.common import run_command_subprocess
+
 
 def run_job(job_name):
     module_path = f"jobs.{job_name}"
@@ -10,6 +12,9 @@ def run_job(job_name):
         # Dynamically import the job module
         job_module = importlib.import_module(module_path)
         job_module.main()
+
+        # command = [sys.executable, '-m', module_path]
+        # run_command_subprocess(command)
 
     except ModuleNotFoundError:
         click.echo(f"Job '{job_name}' not found.", err=True)
