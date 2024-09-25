@@ -12,7 +12,7 @@ class BaseTask(luigi.Task):
     table_name = luigi.Parameter()
     live_schema = luigi.BoolParameter(default=False)
     limit = luigi.IntParameter(default=20)
-    chunk_size = luigi.IntParameter(default=5)
+    load_chunk_size = luigi.IntParameter(default=5)
 
     def output(self):
         return {
@@ -59,7 +59,7 @@ class BaseTask(luigi.Task):
         fields, table_fields = self.get_fields()
 
         # Load CSV in chunks
-        for chunk in pd.read_csv(input_file, chunksize=self.chunk_size):
+        for chunk in pd.read_csv(input_file, chunksize=self.load_chunk_size):
             data = format_csv_data(chunk, fields)  # Assuming format_csv_data can handle DataFrame input
 
             # Insert data into ClickHouse
@@ -69,6 +69,8 @@ class BaseTask(luigi.Task):
                 break
 
     def run(self):
+        print('Running job: ', self.get_task_family())
+
         # Step 1: Extract data from RDS
         self.extract()
 

@@ -1,4 +1,4 @@
-from config.luigi import luigi
+from config.luigi import luigi, local_scheduler
 from datetime import datetime
 
 
@@ -20,7 +20,7 @@ class job_class_name(luigi.Task):
 
 
 def main():
-    luigi.build([job_class_name()], local_scheduler=True)
+    luigi.build([job_class_name()], local_scheduler=local_scheduler)
 
 
 if __name__ == '__main__':

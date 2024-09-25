@@ -69,7 +69,7 @@ def format_csv_data(df, fields):
     return formatted_data
 
 
-def ClearFiles(table_name):
+def clear_files(table_name):
     paths = [
         f"data/{table_name}.csv",
         f"data/transformed_{table_name}.csv"

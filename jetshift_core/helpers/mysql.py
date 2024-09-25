@@ -63,3 +63,81 @@ def get_min_max_id(table_name):
 def handle_mysql_error(error):
     from config.logging import logger
     logger.error(f"MySQL connection failed: {str(error)}")
+
+
+def fetch_and_extract_limit(self, engine, table_fields):
+    import pandas as pd
+    from jetshift_core.helpers.common import clear_files, create_data_directory
+    from jetshift_core.helpers.clcikhouse import get_last_id_from_clickhouse, truncate_table as truncate_clickhouse_table
+
+    table_name = self.table_name
+    truncate_table = self.truncate_table
+    output_path = self.output()['extracted'].path
+    extract_offset = self.extract_offset
+    extract_limit = self.extract_limit
+    primary_id_column = self.primary_id_column
+
+    if truncate_table is True:
+        truncate_clickhouse_table(table_name)
+
+    query = f"SELECT {', '.join(table_fields)} FROM {table_name}"
+
+    if primary_id_column:
+        last_id = get_last_id_from_clickhouse(table_name, primary_id_column)
+        print(f'Last ClickHouse {table_name} {primary_id_column}: ', last_id)
+        query += f" WHERE {primary_id_column} > {last_id}"
+
+    query += f" LIMIT {extract_limit} OFFSET {extract_offset}"
+
+    df = pd.read_sql(query, engine)
+
+    clear_files(table_name)
+    create_data_directory()
+    df.to_csv(output_path, index=False)
+
+
+def fetch_and_extract_chunk(self, engine, table_fields):
+    import pandas as pd
+    import time
+    from jetshift_core.helpers.common import clear_files, create_data_directory
+    from jetshift_core.helpers.clcikhouse import get_last_id_from_clickhouse, truncate_table as truncate_clickhouse_table
+
+    table_name = self.table_name
+    truncate_table = self.truncate_table
+    output_path = self.output()['extracted'].path
+    extract_offset = self.extract_offset
+    extract_chunk_size = self.extract_chunk_size
+    primary_id_column = self.primary_id_column
+    sleep_interval = self.sleep_interval
+
+    if truncate_table is True:
+        truncate_clickhouse_table(table_name)
+
+    clear_files(table_name)
+    create_data_directory()
+
+    if primary_id_column:
+        last_id = get_last_id_from_clickhouse(table_name, primary_id_column)
+        print(f'Last {table_name} {primary_id_column}: ', last_id)
+        count_query = f"SELECT COUNT(*) FROM {table_name} WHERE {primary_id_column} > {last_id}"
+        base_query = f"SELECT {', '.join(table_fields)} FROM {table_name} WHERE {primary_id_column} > {last_id} LIMIT {extract_chunk_size}"
+    else:
+        count_query = f"SELECT COUNT(*) FROM {table_name}"
+        base_query = f"SELECT {', '.join(table_fields)} FROM {table_name} LIMIT {extract_chunk_size}"
+
+    total_rows = pd.read_sql(count_query, engine).iloc[0, 0]
+    total_rows = total_rows - extract_offset
+    print(f"Total rows in {table_name}: {total_rows}")
+
+    loops = (total_rows + extract_chunk_size - 1) // extract_chunk_size
+    print(f"Total loops: {loops}")
+
+    for i in range(loops):
+        if i == 0:
+            offset_query = f"{base_query} OFFSET {extract_offset}"
+        else:
+            offset_query = f"{base_query} OFFSET {(i * extract_chunk_size) + extract_offset}"
+
+        df = pd.read_sql(offset_query, engine)
+        df.to_csv(output_path, mode='a', header=(i == 0), index=False)
+        time.sleep(sleep_interval)

@@ -7,7 +7,7 @@ class job_class_name(BaseTask):
 
 
 def main():
-    luigi.build([job_class_name(limit=10, chunk_size=5)], local_scheduler=local_scheduler)
+    luigi.build([job_class_name(limit=10, load_chunk_size=5)], local_scheduler=local_scheduler)
 
 
 if __name__ == '__main__':
