@@ -95,6 +95,9 @@ def send_discord_message(message):
     else:
         webhook_url = os.environ.get('DISCORD_WEBHOOK')
 
+    if not webhook_url:
+        return None
+
     truncated_message = message[:500]
 
     data = {

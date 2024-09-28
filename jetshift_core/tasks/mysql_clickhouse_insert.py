@@ -52,7 +52,7 @@ class BaseTask(luigi.Task):
             else:
                 fetch_and_extract_chunk(self, engine, table_fields)
 
-        except pymysql.MySQLError as e:
+        except Exception as e:
             print(e)
             logger.error(e)
 
@@ -67,43 +67,47 @@ class BaseTask(luigi.Task):
                 outfile.write(transformed_line + '\n')
 
     def load(self):
-        input_file = self.output()['extracted'].path
-        fields, table_fields = self.get_fields()
+        try:
+            input_file = self.output()['extracted'].path
+            fields, table_fields = self.get_fields()
 
-        # check input_file has exists
-        if not os.path.exists(input_file):
-            print(f'No data to load for {self.table_name}')
-            return False
+            # check input_file has exists
+            if not os.path.exists(input_file):
+                print(f'No data to load for {self.table_name}')
+                return False
 
-        num_rows = 0
-        last_inserted_id = None
+            num_rows = 0
+            last_inserted_id = None
 
-        # print()
-        # print(fields)
-        # print()
+            # print()
+            # print(fields)
+            # print()
 
-        # Load CSV in chunks
-        print(f'\nLoading data into ClickHouse...')
-        for chunk in pd.read_csv(input_file, chunksize=self.load_chunk_size):
-            data = format_csv_data(chunk, fields)  # Assuming format_csv_data can handle DataFrame input
+            # Load CSV in chunks
+            print(f'\nLoading data into ClickHouse...')
+            for chunk in pd.read_csv(input_file, chunksize=self.load_chunk_size):
+                data = format_csv_data(chunk, fields)  # Assuming format_csv_data can handle DataFrame input
 
-            # Insert data into ClickHouse
-            success, last_inserted_id = insert_into_clickhouse(self.table_name, table_fields, data)
-            if success:
-                num_rows += len(data)
-                print(f'Inserted {len(data)} rows into {self.table_name}. Last ID {last_inserted_id}')
+                # Insert data into ClickHouse
+                success, last_inserted_id = insert_into_clickhouse(self.table_name, table_fields, data)
+                if success:
+                    num_rows += len(data)
+                    print(f'Inserted {len(data)} rows into {self.table_name}. Last ID {last_inserted_id}')
 
-            # Sleep for a specified interval to manage load
-            time.sleep(self.sleep_interval)
+                # Sleep for a specified interval to manage load
+                time.sleep(self.sleep_interval)
 
-        # Send Discord message
-        if num_rows > 0:
-            if last_inserted_id is not None:
-                send_discord_message(f'{self.table_name}: Inserted {num_rows} rows. Last id {last_inserted_id}')
-            else:
-                send_discord_message(f'{self.table_name}: Inserted {num_rows} rows')
+            # Send Discord message
+            if num_rows > 0:
+                if last_inserted_id is not None:
+                    send_discord_message(f'{self.table_name}: Inserted {num_rows} rows. Last id {last_inserted_id}')
+                else:
+                    send_discord_message(f'{self.table_name}: Inserted {num_rows} rows')
 
-            print(f'---------\nTotal inserted {num_rows} rows into {self.table_name}. Last ID {last_inserted_id}')
+                print(f'---------\nTotal inserted {num_rows} rows into {self.table_name}. Last ID {last_inserted_id}')
+        except Exception as e:
+            print(e)
+            logger.error(e)
 
     def run(self):
         print('Running job: ', self.get_task_family())
