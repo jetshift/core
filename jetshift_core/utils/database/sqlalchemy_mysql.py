@@ -1,13 +1,13 @@
 from sqlalchemy import create_engine, MetaData, Table, Column, String, Float, DECIMAL, DateTime, func
 from sqlalchemy.exc import SQLAlchemyError
 from jetshift_core.helpers.mysql import get_mysql_credentials
-from jetshift_core.helpers.common import jprint
 
 # Initialize the SQLAlchemy metadata
 metadata = MetaData()
 
 
 def get_engine():
+    from jetshift_core.helpers.common import jprint
     try:
         host, user, password, database = get_mysql_credentials()
 
@@ -20,6 +20,7 @@ def get_engine():
 
 
 def create_table(table, fresh=None):
+    from jetshift_core.helpers.common import jprint
     engine = get_engine()
 
     # Drop the table if it exists

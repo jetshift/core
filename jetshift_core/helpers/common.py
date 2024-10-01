@@ -4,6 +4,8 @@ import importlib
 import multiprocessing
 from config.logging import logger
 
+from jetshift_core.commands.migrations.mysql import table_definition
+
 
 def jprint(message, type='info', all=False, key=None):
     import click
@@ -157,14 +159,8 @@ def run_multi_process(function_to_call, *params):
 
 # Reflect database structure from file
 def get_mysql_table_fields(table_name):
-    import importlib
-
-    module_path = f"database.migrations.mysql.{table_name}"
-
-    table_module = importlib.import_module(module_path)
-
-    table = getattr(table_module, 'table')
-
+    file_path = f'database/migrations/{table_name}.yaml'
+    table = table_definition(file_path)
     fields = [(col.name, col.type.python_type) for col in table.columns]
 
     return fields

@@ -19,7 +19,7 @@ def parse_column_type(col_type_str):
     return type_mapping.get(col_type_str, col_type_str)()
 
 
-def migrate(file_path, fresh):
+def table_definition(file_path):
     with open(file_path, 'r') as file:
         schema = yaml.safe_load(file)
 
@@ -43,7 +43,16 @@ def migrate(file_path, fresh):
         sqlalchemy_columns.append(Column(column['name'], col_type, **col_args))
 
     # Define the table
-    table = Table(table_name, metadata, *sqlalchemy_columns)
+    return Table(
+        table_name,
+        metadata,
+        *sqlalchemy_columns,
+        extend_existing=True
+    )
+
+
+def migrate(file_path, fresh):
+    table_def = table_definition(file_path)
 
     # Create the table
-    create_table(table, fresh)
+    create_table(table_def, fresh)
