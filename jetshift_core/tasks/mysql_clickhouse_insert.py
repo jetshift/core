@@ -17,9 +17,9 @@ class BaseTask(luigi.Task):
 
     extract_offset = luigi.IntParameter(default=0)
     extract_limit = luigi.IntParameter(default=0)
-    extract_chunk_size = luigi.IntParameter(default=5)
+    extract_chunk_size = luigi.IntParameter(default=100)
 
-    load_chunk_size = luigi.IntParameter(default=5)
+    load_chunk_size = luigi.IntParameter(default=100)
     sleep_interval = luigi.FloatParameter(default=1)
 
     def output(self):

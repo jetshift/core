@@ -138,7 +138,7 @@ def insert_update_clickhouse(table_name, table_fields, data):
 
 
 def truncate_table(table_name):
-    from jetshift_core.helpers.common import send_discord_message
+    from config.logging import logger
 
     try:
         clickhouse = clickhouse_client()
@@ -150,5 +150,5 @@ def truncate_table(table_name):
         clickhouse.disconnect_connection()
         return True
     except Error as e:
-        send_discord_message(f'{table_name}: Failed to truncate table. Error: {str(e)}')
+        logger.error(f'{table_name}: Failed to truncate table. Error: {str(e)}')
         return False
