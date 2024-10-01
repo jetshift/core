@@ -1,59 +1,60 @@
+import glob
 import sys
 import importlib
 import pkgutil
 import os
 import click
 
+from jetshift_core.commands.migrations.mysql import migrate as mysql_migrate
 
-def list_available_migrations(engine):
-    package_path = f"database/migrations/{engine}"
-
-    if not os.path.exists(package_path):
-        click.echo(f"Engine '{engine}' not found in the migrations directory.", err=True)
-        sys.exit(1)
-
-    available_migrations = []
-
-    # Use pkgutil to iterate over the modules in the specified package path
-    for _, module_name, is_pkg in pkgutil.iter_modules([package_path]):
-        if not is_pkg:
-            available_migrations.append(module_name)
-
-    return available_migrations
+from jetshift_core.commands.migrations.clickhouse import migrate as clickhouse_migrate
 
 
 def run_migration(engine, migration_name, fresh):
-    module_path = f"database.migrations.{engine}.{migration_name}"
-    file_path = os.path.join("database", "migrations", engine, f"{migration_name}.py")
-
-    if not os.path.exists(file_path):
-        click.echo(f"Migration file '{file_path}' does not exist.", err=True)
-        sys.exit(1)
-
     try:
-        click.echo(f"Migrating table: {migration_name}")
-        migration_module = importlib.import_module(module_path)
+        file_path = f'database/migrations/{migration_name}.yaml'
+        if not os.path.exists(file_path):
+            click.echo(f"Migration file '{file_path}' does not exist.", err=True)
+            sys.exit(1)
 
-        # Call the Click command directly as a function, passing 'fresh' as an argument
-        migration_module.main(fresh)
+        click.echo(f"Migrating table: {migration_name}")
+
+        if engine == "mysql":
+            mysql_migrate(file_path, fresh)
+
+        elif engine == "clickhouse":
+            clickhouse_migrate(file_path, fresh)
+
+        else:
+            click.echo(f"Engine '{engine}' is not supported.", err=True)
+            sys.exit(1)
 
         click.echo(f"Migrated table: {migration_name}")
         click.echo("-----")
 
-    except ModuleNotFoundError:
-        click.echo(f"Migration '{migration_name}' under engine '{engine}' not found.", err=True)
+    except Exception as e:
+        click.echo(f"Error migrating table '{migration_name}': {e}", err=True)
         sys.exit(1)
 
-    except AttributeError:
-        click.echo(f"The migration '{migration_name}' under engine '{engine}' does not have a 'main' function.", err=True)
+
+def list_available_migrations():
+    package_path = f"database/migrations"
+
+    if not os.path.exists(package_path):
+        click.echo(f"Migration directory '{package_path}' does not exist.", err=True)
         sys.exit(1)
+
+    available_migrations = glob.glob(os.path.join(package_path, '*.yaml'))
+    migration_names = [os.path.splitext(os.path.basename(migration))[0] for migration in available_migrations]
+
+    return migration_names
 
 
 def run_all_migrations(engine, fresh):
-    available_migrations = list_available_migrations(engine)
+    available_migrations = list_available_migrations()
 
     if not available_migrations:
-        click.echo(f"No migrations found for engine '{engine}'.", err=True)
+        click.echo("No migrations found.", err=True)
         sys.exit(1)
 
     for migration_name in available_migrations:
