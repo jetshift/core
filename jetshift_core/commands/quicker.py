@@ -4,7 +4,7 @@ import click
 
 
 def run_quicker(job_name):
-    module_path = f"quickers.{job_name}"
+    module_path = f"app.quickers.{job_name}"
 
     try:
         # Dynamically import the module

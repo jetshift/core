@@ -1,0 +1,14 @@
+table:
+  name: TableName
+  primary_id: id
+  live_schema: false
+extract:
+  offset: 5
+  # limit: 10
+  chunk_size: 100
+load:
+  truncate_table: false
+  chunk_size: 100
+  sleep_interval: 1
+task:
+  module: jetshift_core.tasks.mysql_clickhouse_insert

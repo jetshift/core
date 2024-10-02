@@ -159,7 +159,8 @@ def fetch_and_extract_chunk(self, engine, table_fields):
         base_query = f"SELECT {', '.join(table_fields)} FROM {table_name} LIMIT {extract_chunk_size}"
 
     total_rows = pd.read_sql(count_query, engine).iloc[0, 0]
-    total_rows = total_rows - extract_offset
+    if total_rows > 0:
+        total_rows = total_rows - extract_offset
     print(f"Total rows in {table_name} (mysql): {total_rows}")
 
     loops = (total_rows + extract_chunk_size - 1) // extract_chunk_size

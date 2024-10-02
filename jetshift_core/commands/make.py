@@ -79,16 +79,9 @@ def make_job(new_job_name, jobtype):
     # Get the directory of stub files
     stub_root = os.path.join(Path(__file__).parent.parent, 'stubs')
     stub_dir = os.path.join(stub_root, 'jobs')
-    stub_path = os.path.join(stub_dir, jobtype + '.py')
+    stub_path = os.path.join(stub_dir, jobtype + '.yaml')
 
-    job_path = os.path.join(os.getcwd(), 'jobs', new_job_name + '.py')
-
-    # Check if the specified engine exists in the available engines
-    available_job_types = [os.path.splitext(f)[0] for f in os.listdir(stub_dir) if f.endswith('.py')]
-    if jobtype not in available_job_types:
-        error_msg = f"The specified job type '{jobtype}' does not exist in available job types. Available job types: {', '.join(available_job_types)}"
-        jprint(error_msg, 'error')
-        return
+    job_path = os.path.join(os.getcwd(), 'app', 'jobs', new_job_name + '.yaml')
 
     # Check if the migration file already exists
     if os.path.exists(job_path):
@@ -103,8 +96,8 @@ def make_job(new_job_name, jobtype):
         content = file.read()
 
     # Replace placeholder table name with the new table name
-    content = content.replace('the_table_name', new_job_name)
-    content = content.replace('job_class_name', to_pascal_case(new_job_name) + 'Job')
+    content = content.replace('TableName', new_job_name)
+    # content = content.replace('job_class_name', to_pascal_case(new_job_name) + 'Job')
 
     # Write the updated content back to the file
     with open(job_path, 'w') as file:
@@ -147,7 +140,7 @@ def make_quicker(new_quicker_name):
     "-e", "--engine", default="mysql", help="Name of the engine (e.g., 'mysql', 'clickhouse'). Default is 'mysql'."
 )
 @click.option(
-    "-jt", "--jobtype", default="simple", help="Type of the job (e.g., 'simple', 'mysql_clickhouse'). Default is 'simple'."
+    "-jt", "--jobtype", default="common", help="Type of the job (e.g., 'simple', 'mysql_clickhouse'). Default is 'simple'."
 )
 def main(type, name, engine, jobtype):
     if type == "migration":

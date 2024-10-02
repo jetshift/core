@@ -4,7 +4,7 @@ import click
 
 
 def run_listener(listener_name):
-    module_path = f"listeners.{listener_name}"
+    module_path = f"app.listeners.{listener_name}"
 
     try:
         # Dynamically import the listener module

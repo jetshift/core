@@ -1,6 +1,5 @@
 import luigi
 import pandas as pd
-import pymysql
 import time
 from config.logging import logger
 from luigi.format import UTF8
@@ -11,7 +10,6 @@ from jetshift_core.helpers.clcikhouse import insert_into_clickhouse, get_last_id
 
 class BaseTask(luigi.Task):
     table_name = luigi.Parameter()
-    truncate_table = luigi.BoolParameter(default=False)
     live_schema = luigi.BoolParameter(default=False)
     primary_id = luigi.Parameter(default='')
 
@@ -19,6 +17,7 @@ class BaseTask(luigi.Task):
     extract_limit = luigi.IntParameter(default=0)
     extract_chunk_size = luigi.IntParameter(default=100)
 
+    truncate_table = luigi.BoolParameter(default=False)
     load_chunk_size = luigi.IntParameter(default=100)
     sleep_interval = luigi.FloatParameter(default=1)
 
@@ -109,7 +108,7 @@ class BaseTask(luigi.Task):
             logger.error(e)
 
     def run(self):
-        print('Running job: ', self.get_task_family())
+        print('Running job for table: ', self.table_name)
 
         # Step 1: Extract data from RDS
         self.extract()

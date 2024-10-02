@@ -4,7 +4,6 @@ import os
 import click
 
 from jetshift_core.commands.seeders.mysql import seed_mysql
-from jetshift_core.helpers.common import run_command_subprocess
 
 
 def run_seeder(seeder_engine, seeder_name, records):
