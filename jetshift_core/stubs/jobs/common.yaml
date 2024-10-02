@@ -3,7 +3,7 @@ table:
   primary_id: id
   live_schema: false
 extract:
-  offset: 5
+  offset: 0
   # limit: 10
   chunk_size: 100
 load:

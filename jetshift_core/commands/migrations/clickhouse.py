@@ -7,14 +7,22 @@ type_mapping = {
     'INT': types.UInt32,
     'VARCHAR': types.String,
     'TIMESTAMP': types.DateTime,
+    'DECIMAL': types.Decimal,
+    'BOOLEAN': types.Boolean,
+    'FLOAT': types.Float32,
 }
 
 
 def parse_column_type(col_type_str, nullable):
     if '(' in col_type_str and ')' in col_type_str:
-        base_type, length = col_type_str.split('(')
-        length = int(length.split(')')[0])
-        col_type = type_mapping.get(base_type, base_type)(length)
+        base_type, params = col_type_str.split('(')
+        params = params.split(')')[0].split(',')
+        if len(params) == 1:
+            length = int(params[0])
+            col_type = type_mapping.get(base_type, base_type)(length)
+        elif len(params) == 2:
+            precision, scale = map(int, params)
+            col_type = type_mapping.get(base_type, base_type)(precision, scale)
     else:
         col_type = type_mapping.get(col_type_str, col_type_str)()
 
@@ -43,7 +51,9 @@ def yaml_table_definition(file_path):
         }
         if 'default' in column and column['default'] == 'CURRENT_TIMESTAMP':
             col_args['server_default'] = func.now()
-        if 'on_update' in column and column['on_update'] == 'CURRENT_TIMESTAMP':
+        elif 'default' in column:
+            col_args['server_default'] = column['default']
+        elif 'on_update' in column and column['on_update'] == 'CURRENT_TIMESTAMP':
             col_args['onupdate'] = func.now()
         sqlalchemy_columns.append(Column(column['name'], col_type, **col_args))
 

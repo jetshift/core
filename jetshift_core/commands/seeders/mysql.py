@@ -23,6 +23,8 @@ def seed_mysql(table_name, num_records):
                 data = generate_fake_data(table, fields)
                 data = (primary_id,) + data
 
+                # print(data)
+
                 placeholders = ', '.join(['%s'] * len(table_fields))
                 mysql_query = f"INSERT INTO {table_name} ({', '.join(table_fields)}) VALUES ({placeholders})"
                 cursor.execute(mysql_query, data)
