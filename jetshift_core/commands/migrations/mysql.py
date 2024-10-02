@@ -39,6 +39,7 @@ def yaml_table_definition(file_path):
     # Define columns for SQLAlchemy table
     sqlalchemy_columns = []
     for column in columns:
+
         col_type = parse_column_type(column['type'])
         col_args = {
             'primary_key': column.get('primary_key', False),
@@ -51,7 +52,12 @@ def yaml_table_definition(file_path):
             col_args['server_default'] = column['default']
         elif 'on_update' in column and column['on_update'] == 'CURRENT_TIMESTAMP':
             col_args['onupdate'] = func.now()
-        sqlalchemy_columns.append(Column(column['name'], col_type, **col_args))
+
+        custom_info = {
+            'seeder': column.get('seeder', None)
+        }
+
+        sqlalchemy_columns.append(Column(column['name'], col_type, info=custom_info, **col_args))
 
     # Define the table
     return Table(

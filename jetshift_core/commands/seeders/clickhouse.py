@@ -6,7 +6,7 @@ from jetshift_core.helpers.clcikhouse import insert_into_clickhouse, get_last_id
 from jetshift_core.helpers.mysql import get_mysql_table_definition
 
 
-def seed_clickhouse(table_name, num_records):
+def seed_clickhouse(engine, table_name, num_records):
     table = get_mysql_table_definition(table_name)
     fields = [(col.name, col.type.python_type) for col in table.columns]
 
@@ -20,7 +20,7 @@ def seed_clickhouse(table_name, num_records):
         primary_id = last_id + 1
         for i in range(1, num_records + 1):
 
-            data = generate_fake_data(table, fields)
+            data = generate_fake_data(engine, table, fields)
             data = (primary_id,) + data
 
             formatted_data.append(data)

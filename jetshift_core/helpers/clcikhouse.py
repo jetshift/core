@@ -72,6 +72,17 @@ def get_last_id_from_clickhouse(table_name, primary_id='id'):
     return int(data[0][0]) if data else 0
 
 
+def get_min_max_id(table_name):
+    try:
+        clickhouse = clickhouse_client()
+        result = clickhouse.execute(f"SELECT MIN(id), MAX(id) FROM {table_name}")
+        clickhouse.disconnect_connection()
+
+        return result[0], result[1]
+    except Exception as e:
+        return 0, 0
+
+
 def insert_into_clickhouse(table_name, table_fields, data):
     from jetshift_core.helpers.common import send_discord_message
     from config.logging import logger

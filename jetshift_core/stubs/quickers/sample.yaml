@@ -5,8 +5,12 @@ migrations:
     - "clickhouse"
 
 seeders:
-  - "users -n 50"
-  #  - "all"
+  engines:
+    - "mysql"
+    - "clickhouse"
+  names:
+    - "users -n 50"
+    #  - "all"
 
 jobs:
   - "users"

@@ -47,9 +47,16 @@ def get_mysql_table_definition(table_name, live_schema=False):
 
 # Reflect database structure from yaml file
 def get_mysql_yaml_table_definition(table_name):
+    import os
+    import sys
+    from jetshift_core.helpers.common import jprint
     from jetshift_core.commands.migrations.mysql import yaml_table_definition
 
-    file_path = f'database/migrations/{table_name}.yaml'
+    file_path = f'app/migrations/{table_name}.yaml'
+    if not os.path.exists(file_path):
+        jprint(f"Migration '{file_path}' does not exist.", 'error')
+        sys.exit(1)
+
     table = yaml_table_definition(file_path)
 
     return table

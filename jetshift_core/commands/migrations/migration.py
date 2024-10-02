@@ -1,7 +1,5 @@
 import glob
 import sys
-import importlib
-import pkgutil
 import os
 import click
 
@@ -11,7 +9,7 @@ from jetshift_core.commands.migrations.clickhouse import migrate as migrate_clic
 
 def run_migration(engine, migration_name, fresh, drop):
     try:
-        file_path = f'database/migrations/{migration_name}.yaml'
+        file_path = f'app/migrations/{migration_name}.yaml'
         if not os.path.exists(file_path):
             click.echo(f"Migration '{file_path}' does not exist.", err=True)
             sys.exit(1)

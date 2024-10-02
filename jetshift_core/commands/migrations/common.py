@@ -4,10 +4,30 @@ import random
 from faker import Faker
 import datetime
 
+from jetshift_core.commands.seeders.common import min_max_id
+
 fake = Faker()
 
 
-def generate_fake_data(table, fields):
+def generate_data_from_seeder_info(engine, column, field_length, seeder_info):
+    value = None
+
+    if '(' in seeder_info and ')' in seeder_info:
+        seeder_function, seeder_param = seeder_info.split('(')
+        seeder_param = seeder_param.rstrip(')')
+    else:
+        seeder_function, seeder_param = seeder_info, ''
+
+    if seeder_function == 'email':
+        value = fake.email()
+
+    if seeder_function == 'min_max':
+        value = random.randint(*min_max_id(engine, seeder_param))
+
+    return value
+
+
+def generate_fake_data(engine, table, fields):
     fake = Faker()
     formatted_row = []
 
@@ -24,7 +44,11 @@ def generate_fake_data(table, fields):
 
         # print(column.type)
 
-        if field_type == int and field_name != 'id':
+        seeder_info = column.info.get('seeder', None)
+        if seeder_info is not None:
+            value = generate_data_from_seeder_info(engine, column, field_length, seeder_info)
+
+        elif field_type == int and field_name != 'id':
             if field_length is not None:
                 value = (fake.random_int(0, field_length))
             else:

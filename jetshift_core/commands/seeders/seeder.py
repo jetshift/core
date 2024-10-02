@@ -11,10 +11,10 @@ def run_seeder(seeder_engine, seeder_name, records):
         click.echo(f"Running seeder: {seeder_name}")
 
         if seeder_engine == "mysql":
-            seed_mysql(seeder_name, records)
+            seed_mysql(seeder_engine, seeder_name, records)
 
         elif seeder_engine == "clickhouse":
-            seed_clickhouse(seeder_name, records)
+            seed_clickhouse(seeder_engine, seeder_name, records)
 
         else:
             click.echo(f"Seeder engine '{seeder_engine}' is not supported.", err=True)

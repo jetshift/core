@@ -12,7 +12,7 @@ def make_migration(engine, new_migration_name):
     stub_dir = os.path.join(stub_root, 'migrations')
     stub_path = os.path.join(stub_dir, 'sample.yaml')
 
-    migration_path = os.path.join(os.getcwd(), 'database', 'migrations', new_migration_name + '.yaml')
+    migration_path = os.path.join(os.getcwd(), 'app', 'migrations', new_migration_name + '.yaml')
 
     # Check if the migration file already exists
     if os.path.exists(migration_path):
@@ -36,43 +36,6 @@ def make_migration(engine, new_migration_name):
 
     success_msg = f"Migration [{migration_path}] created successfully."
     jprint(success_msg, 'info')
-
-
-def make_seeder(engine, new_seeder_name):
-    # Get the directory of stub files
-    stub_root = os.path.join(Path(__file__).parent.parent, 'stubs')
-    stub_dir = os.path.join(stub_root, 'seeders')
-    stub_path = os.path.join(stub_dir, engine + '.py')
-
-    seeder_path = os.path.join(os.getcwd(), 'database', 'seeders', engine, new_seeder_name + '.py')
-
-    # Check if the specified engine exists in the available engines
-    available_engines = [os.path.splitext(f)[0] for f in os.listdir(stub_dir) if f.endswith('.py')]
-    if engine not in available_engines:
-        error_msg = f"The specified engine '{engine}' does not exist in available engines. Available engines: {', '.join(available_engines)}"
-        jprint(error_msg, 'error')
-        return
-
-    # Check if the migration file already exists
-    if os.path.exists(seeder_path):
-        jprint(f"Seeder [{seeder_path}] already exists.", 'error')
-        return
-
-    # Copy stub file to new location
-    shutil.copy(stub_path, seeder_path)
-
-    # Open the new file and modify its content
-    with open(seeder_path, 'r') as file:
-        content = file.read()
-
-    # Replace placeholder table name with the new table name
-    content = content.replace('the_table_name', new_seeder_name)
-
-    # Write the updated content back to the file
-    with open(seeder_path, 'w') as file:
-        file.write(content)
-
-    jprint(f"Seeder [{seeder_path}] created successfully.", 'info')
 
 
 def make_job(new_job_name, jobtype):
@@ -145,14 +108,12 @@ def make_quicker(new_quicker_name):
 def main(type, name, engine, jobtype):
     if type == "migration":
         make_migration(engine, name)
-    elif type == "seeder":
-        make_seeder(engine, name)
     elif type == "job":
         make_job(name, jobtype)
     elif type == "quicker":
         make_quicker(name)
     else:
-        jprint("Invalid make type. Must be 'migration', 'seeder', 'job', or 'quicker'.", 'error')
+        jprint("Invalid make type. Must be 'migration', 'job', or 'quicker'.", 'error')
 
 
 if __name__ == "__main__":

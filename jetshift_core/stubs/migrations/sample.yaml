@@ -12,6 +12,7 @@ columns:
   - name: email
     type: VARCHAR(199)
     nullable: true
+    seeder: email
 
   - name: created_at
     type: TIMESTAMP
