@@ -3,19 +3,28 @@ import os
 import sys
 import yaml
 import click
-from jetshift_core.helpers.quicker import migrations, seeders, jobs
+from jetshift_core.helpers.quicker import run_migrations, run_seeders, run_jobs
 from jetshift_core.helpers.common import jprint
+
+
+def prepare_migration(config):
+    migration_config = config.get('migrations', {})
+    engines = migration_config.get('engines', ['mysql'])
+    names = migration_config.get('names', [])
+    fresh = migration_config.get('fresh', True)
+
+    return engines, names, fresh
 
 
 def prepare_seeders(config):
     seeder_config = config.get('seeders', [])
     engines = seeder_config.get('engines', ['mysql'])
-    seeder_list = seeder_config.get('names', [])
+    names = seeder_config.get('names', [])
 
-    if 'all' in seeder_list:
-        seeder_list = [os.path.splitext(os.path.basename(file))[0] for file in glob.glob('database/migrations/*.yaml')]
+    if 'all' in names:
+        names = [os.path.splitext(os.path.basename(file))[0] for file in glob.glob('database/migrations/*.yaml')]
 
-    return engines, seeder_list
+    return engines, names
 
 
 def prepare_jobs(config, seeder_list):
@@ -42,10 +51,11 @@ def run_quicker(quicker):
         config = yaml.safe_load(file)
 
     if 'migrations' in config:
-        migration_list = config['migrations'].get('engines', [])
-        fresh = config['migrations'].get('fresh', True)
+        engines, names, fresh = prepare_migration(config)
 
-        migrations(migration_list, fresh)
+        for engine in engines:
+            run_migrations(engine, names, fresh)
+
         jprint("✓ Migrations completed", 'success', True)
 
     seeder_list = []
@@ -53,13 +63,13 @@ def run_quicker(quicker):
         engines, seeder_list = prepare_seeders(config)
 
         for engine in engines:
-            seeders(seeder_list, engine)
+            run_seeders(seeder_list, engine)
 
         jprint("✓ Seeders completed", 'success', True)
 
     if 'jobs' in config:
         the_jobs = prepare_jobs(config, seeder_list)
-        jobs(the_jobs)
+        run_jobs(the_jobs)
         jprint("✓ Jobs completed", 'success', True)
 
 
