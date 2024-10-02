@@ -8,12 +8,14 @@ from jetshift_core.helpers.common import jprint
 
 
 def prepare_seeders(config):
-    seeder_list = config.get('seeders', [])
+    seeder_config = config.get('seeders', [])
+    engines = seeder_config.get('engines', ['mysql'])
+    seeder_list = seeder_config.get('names', [])
 
     if 'all' in seeder_list:
         seeder_list = [os.path.splitext(os.path.basename(file))[0] for file in glob.glob('database/migrations/*.yaml')]
 
-    return seeder_list
+    return engines, seeder_list
 
 
 def prepare_jobs(config, seeder_list):
@@ -48,8 +50,11 @@ def run_quicker(quicker):
 
     seeder_list = []
     if 'seeders' in config:
-        seeder_list = prepare_seeders(config)
-        seeders(seeder_list)
+        engines, seeder_list = prepare_seeders(config)
+
+        for engine in engines:
+            seeders(seeder_list, engine)
+
         jprint("✓ Seeders completed", 'success', True)
 
     if 'jobs' in config:

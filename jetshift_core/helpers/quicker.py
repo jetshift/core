@@ -11,12 +11,11 @@ def migrations(engines, fresh):
         click.echo(result.output)
 
 
-def seeders(items):
+def seeders(items, engine='mysql'):
     from jetshift_core.commands.seeders.seeder import main as run_seeder
     for item in items:
         params_split = item.split(' -n ')
         seeder_name = params_split[0]
-        engine = 'mysql'
 
         if len(params_split) > 1:
             records = params_split[1]

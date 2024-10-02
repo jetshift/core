@@ -162,6 +162,7 @@ def convert_field_to_python(field_type):
     type_mappings = {
         int: int,
         str: str,
+        float: float,
         datetime: lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S'),
     }
     return type_mappings.get(field_type, str)
