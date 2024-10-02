@@ -1,13 +1,11 @@
+import glob
 import sys
-import importlib
 import os
 import click
-
 from jetshift_core.commands.seeders.mysql import seed_mysql
 
 
 def run_seeder(seeder_engine, seeder_name, records):
-    # from click.testing import CliRunner
     try:
         click.echo(f"Running seeder: {seeder_name}")
 
@@ -35,17 +33,13 @@ def run_seeder(seeder_engine, seeder_name, records):
 @click.option("-n", default=10, help="Number of records to seed. Default is 10.")
 def main(engine, seeder, n):
     if seeder is None:
-        # Get the root directory of the project
-        seeders_dir = os.path.join(os.getcwd(), 'database', 'seeders', engine)
+        seeder_list = [os.path.splitext(os.path.basename(file))[0] for file in glob.glob('database/migrations/*.yaml')]
+        if not seeder_list:
+            click.echo("No seeders found.")
+            return
 
-        if not os.path.exists(seeders_dir):
-            click.echo(f"No seeders found for engine '{engine}'.", err=True)
-            sys.exit(1)
-
-        for filename in os.listdir(seeders_dir):
-            if filename.endswith(".py") and filename != "__init__.py":
-                seeder_name = filename[:-3]  # Remove .py extension
-                run_seeder(engine, seeder_name, n)
+        for seeder_name in seeder_list:
+            run_seeder(engine, seeder_name, n)
     else:
         run_seeder(engine, seeder, n)
 

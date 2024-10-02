@@ -110,9 +110,9 @@ def make_quicker(new_quicker_name):
     # Get the directory of stub files
     stub_root = os.path.join(Path(__file__).parent.parent, 'stubs')
     stub_dir = os.path.join(stub_root, 'quickers')
-    stub_path = os.path.join(stub_dir, 'mix.py')
+    stub_path = os.path.join(stub_dir, 'sample.yaml')
 
-    quicker_path = os.path.join(os.getcwd(), 'quickers', new_quicker_name + '.py')
+    quicker_path = os.path.join(os.getcwd(), 'app', 'quickers', new_quicker_name + '.yaml')
 
     # Check if the migration file already exists
     if os.path.exists(quicker_path):

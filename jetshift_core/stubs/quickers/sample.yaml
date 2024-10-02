@@ -1,0 +1,14 @@
+migrations:
+  fresh: true
+  engines:
+    - "mysql"
+    - "clickhouse"
+
+seeders:
+  - "users -n 50"
+  #  - "all"
+
+jobs:
+  - "users"
+  #  - "all"
+  #  - "seeders"

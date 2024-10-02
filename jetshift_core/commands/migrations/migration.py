@@ -13,7 +13,7 @@ def run_migration(engine, migration_name, fresh):
     try:
         file_path = f'database/migrations/{migration_name}.yaml'
         if not os.path.exists(file_path):
-            click.echo(f"Migration file '{file_path}' does not exist.", err=True)
+            click.echo(f"Migration '{file_path}' does not exist.", err=True)
             sys.exit(1)
 
         click.echo(f"Migrating table: {migration_name}")

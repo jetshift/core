@@ -4,10 +4,10 @@ from click.testing import CliRunner
 runner = CliRunner()
 
 
-def migrations(engines):
+def migrations(engines, fresh):
     from jetshift_core.commands.migrations.migration import main as run_migration
     for engine in engines:
-        result = runner.invoke(run_migration, ['--engine', engine, '--fresh'])
+        result = runner.invoke(run_migration, ['--engine', engine] + (['--fresh'] if fresh else []))
         click.echo(result.output)
 
 
