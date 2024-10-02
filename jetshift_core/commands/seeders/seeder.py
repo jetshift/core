@@ -3,6 +3,7 @@ import sys
 import os
 import click
 from jetshift_core.commands.seeders.mysql import seed_mysql
+from jetshift_core.commands.seeders.clickhouse import seed_clickhouse
 
 
 def run_seeder(seeder_engine, seeder_name, records):
@@ -11,6 +12,9 @@ def run_seeder(seeder_engine, seeder_name, records):
 
         if seeder_engine == "mysql":
             seed_mysql(seeder_name, records)
+
+        elif seeder_engine == "clickhouse":
+            seed_clickhouse(seeder_name, records)
 
         else:
             click.echo(f"Seeder engine '{seeder_engine}' is not supported.", err=True)

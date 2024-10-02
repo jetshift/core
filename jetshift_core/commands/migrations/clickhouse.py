@@ -24,7 +24,7 @@ def parse_column_type(col_type_str, nullable):
     return col_type
 
 
-def migrate(file_path, fresh):
+def yaml_table_definition(file_path):
     with open(file_path, 'r') as file:
         schema = yaml.safe_load(file)
 
@@ -36,7 +36,6 @@ def migrate(file_path, fresh):
     sqlalchemy_columns = []
     for column in columns:
         col_type = parse_column_type(column['type'], column.get('nullable', False))
-
         col_args = {
             'primary_key': column.get('primary_key', False),
             'autoincrement': column.get('auto_increment', False),
@@ -49,12 +48,16 @@ def migrate(file_path, fresh):
         sqlalchemy_columns.append(Column(column['name'], col_type, **col_args))
 
     # Define the table
-    table = Table(
+    return Table(
         table_name,
         metadata,
         *sqlalchemy_columns,
         engines.MergeTree(order_by=['id'])
     )
 
+
+def migrate(file_path, fresh):
+    table_def = yaml_table_definition(file_path)
+
     # Create the table
-    create_table(table, fresh)
+    create_table(table_def, fresh)
