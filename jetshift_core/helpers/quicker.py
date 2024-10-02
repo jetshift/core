@@ -5,14 +5,14 @@ runner = CliRunner()
 
 
 def migrations(engines):
-    from jetshift_core.commands.migration import main as run_migration
+    from jetshift_core.commands.migrations.migration import main as run_migration
     for engine in engines:
         result = runner.invoke(run_migration, ['--engine', engine, '--fresh'])
         click.echo(result.output)
 
 
 def seeders(items):
-    from jetshift_core.commands.seeder import main as run_seeder
+    from jetshift_core.commands.seeders.seeder import main as run_seeder
     for item in items:
         params_split = item.split(' -n ')
         seeder_name = params_split[0]

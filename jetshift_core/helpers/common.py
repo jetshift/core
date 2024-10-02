@@ -4,8 +4,6 @@ import importlib
 import multiprocessing
 from config.logging import logger
 
-from jetshift_core.commands.migrations.mysql import table_definition
-
 
 def jprint(message, type='info', all=False, key=None):
     import click
@@ -155,32 +153,6 @@ def run_multi_process(function_to_call, *params):
         logger.info("Process started successfully.")
     except Exception as e:
         logger.error(f"An error occurred while running the process: {str(e)}")
-
-
-# Reflect database structure from file
-def get_mysql_table_fields(table_name):
-    file_path = f'database/migrations/{table_name}.yaml'
-    table = table_definition(file_path)
-    fields = [(col.name, col.type.python_type) for col in table.columns]
-
-    return fields
-
-
-# Reflect the existing database structure
-def get_mysql_table_fields_from_database(table_name):
-    from jetshift_core.utils.database.sqlalchemy_mysql import get_engine, MetaData, Table
-
-    engine = get_engine()
-    metadata = MetaData()
-    metadata.reflect(bind=engine)
-
-    # Access the users table using the reflected metadata
-    table = Table(table_name, metadata, autoload_with=engine)
-
-    # Extract column information
-    fields = [(col.name, col.type.python_type) for col in table.columns]
-
-    return fields
 
 
 def convert_field_to_python(field_type):

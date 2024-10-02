@@ -36,6 +36,39 @@ def mysql_connect():
         handle_mysql_error(e)
 
 
+def get_mysql_table_definition(table_name, live_schema=False):
+    if live_schema is True:
+        table = get_mysql_database_table_definition(table_name)
+    else:
+        table = get_mysql_yaml_table_definition(table_name)
+
+    return table
+
+
+# Reflect database structure from yaml file
+def get_mysql_yaml_table_definition(table_name):
+    from jetshift_core.commands.migrations.mysql import yaml_table_definition
+
+    file_path = f'database/migrations/{table_name}.yaml'
+    table = yaml_table_definition(file_path)
+
+    return table
+
+
+# Reflect the existing database structure
+def get_mysql_database_table_definition(table_name):
+    from jetshift_core.utils.database.sqlalchemy_mysql import get_engine, MetaData, Table
+
+    engine = get_engine()
+    metadata = MetaData()
+    metadata.reflect(bind=engine)
+
+    # Access the users table using the reflected metadata
+    table = Table(table_name, metadata, autoload_with=engine)
+
+    return table
+
+
 def get_last_id(table_name, column_name='id'):
     try:
         connection = mysql_connect()

@@ -10,16 +10,9 @@ def make_migration(engine, new_migration_name):
     # Get the directory of stub files
     stub_root = os.path.join(Path(__file__).parent.parent, 'stubs')
     stub_dir = os.path.join(stub_root, 'migrations')
-    stub_path = os.path.join(stub_dir, engine + '.py')
+    stub_path = os.path.join(stub_dir, 'sample.yaml')
 
-    migration_path = os.path.join(os.getcwd(), 'database', 'migrations', engine, new_migration_name + '.py')
-
-    # Check if the specified engine exists in the available engines
-    available_engines = [os.path.splitext(f)[0] for f in os.listdir(stub_dir) if f.endswith('.py')]
-    if engine not in available_engines:
-        error_msg = f"The specified engine '{engine}' does not exist in available engines. Available engines: {', '.join(available_engines)}"
-        jprint(error_msg, 'error')
-        return
+    migration_path = os.path.join(os.getcwd(), 'database', 'migrations', new_migration_name + '.yaml')
 
     # Check if the migration file already exists
     if os.path.exists(migration_path):
@@ -35,7 +28,7 @@ def make_migration(engine, new_migration_name):
         content = file.read()
 
     # Replace placeholder table name with the new table name
-    content = content.replace('table_name', new_migration_name)
+    content = content.replace('TableName', new_migration_name)
 
     # Write the updated content back to the file
     with open(migration_path, 'w') as file:

@@ -3,6 +3,7 @@ import importlib
 import os
 import click
 
+from jetshift_core.commands.seeders.mysql import seed_mysql
 from jetshift_core.helpers.common import run_command_subprocess
 
 
@@ -11,17 +12,12 @@ def run_seeder(seeder_engine, seeder_name, records):
     try:
         click.echo(f"Running seeder: {seeder_name}")
 
-        # Dynamically import the seeder module
-        module_path = f"database.seeders.{seeder_engine}.{seeder_name}"
-        seeder_module = importlib.import_module(module_path)
+        if seeder_engine == "mysql":
+            seed_mysql(seeder_name, records)
 
-        # Simulate invoking the click command with command-line arguments
-        # runner = CliRunner()
-        # result = runner.invoke(seeder_module.main, [str(records)])
-        # click.echo(result.output)
-
-        command = [sys.executable, '-m', module_path, str(records)]
-        run_command_subprocess(command)
+        else:
+            click.echo(f"Seeder engine '{seeder_engine}' is not supported.", err=True)
+            sys.exit(1)
 
     except ModuleNotFoundError:
         click.echo(f"Seeder '{seeder_name}' not found. Please check the seeder engine.", err=True)

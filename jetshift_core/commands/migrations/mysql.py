@@ -19,7 +19,7 @@ def parse_column_type(col_type_str):
     return type_mapping.get(col_type_str, col_type_str)()
 
 
-def table_definition(file_path):
+def yaml_table_definition(file_path):
     with open(file_path, 'r') as file:
         schema = yaml.safe_load(file)
 
@@ -52,7 +52,7 @@ def table_definition(file_path):
 
 
 def migrate(file_path, fresh):
-    table_def = table_definition(file_path)
+    table_def = yaml_table_definition(file_path)
 
     # Create the table
     create_table(table_def, fresh)

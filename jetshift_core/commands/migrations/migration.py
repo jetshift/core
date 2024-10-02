@@ -5,9 +5,8 @@ import pkgutil
 import os
 import click
 
-from jetshift_core.commands.migrations.mysql import migrate as mysql_migrate
-
-from jetshift_core.commands.migrations.clickhouse import migrate as clickhouse_migrate
+from jetshift_core.commands.migrations.mysql import migrate as migrate_mysql
+from jetshift_core.commands.migrations.clickhouse import migrate as migrate_clickhouse
 
 
 def run_migration(engine, migration_name, fresh):
@@ -20,10 +19,10 @@ def run_migration(engine, migration_name, fresh):
         click.echo(f"Migrating table: {migration_name}")
 
         if engine == "mysql":
-            mysql_migrate(file_path, fresh)
+            migrate_mysql(file_path, fresh)
 
         elif engine == "clickhouse":
-            clickhouse_migrate(file_path, fresh)
+            migrate_clickhouse(file_path, fresh)
 
         else:
             click.echo(f"Engine '{engine}' is not supported.", err=True)

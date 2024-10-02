@@ -28,14 +28,13 @@ class BaseTask(luigi.Task):
             'transformed': luigi.LocalTarget(f'data/transformed_{self.table_name}.csv')
         }
 
-    def get_fields(self):
-        if self.live_schema is True:
-            fields_data = get_mysql_table_fields_from_database(self.table_name)
-        else:
-            fields_data = get_mysql_table_fields(self.table_name)
+    def get_mysql_fields(self):
+        table = get_mysql_table_definition(self.table_name, self.live_schema)
+        columns = [(col.name, col.type.python_type) for col in table.columns]
 
-        fields = [(field[0], convert_field_to_python(field[1])) for field in fields_data]
+        fields = [(field[0], convert_field_to_python(field[1])) for field in columns]
         table_fields = [field[0] for field in fields]
+
         return fields, table_fields
 
     def extract(self):
@@ -45,7 +44,7 @@ class BaseTask(luigi.Task):
             if isinstance(engine, dict):
                 return
 
-            fields, table_fields = self.get_fields()
+            fields, table_fields = self.get_mysql_fields()
 
             if self.extract_limit != 0:
                 fetch_and_extract_limit(self, engine, table_fields)
@@ -69,7 +68,7 @@ class BaseTask(luigi.Task):
     def load(self):
         try:
             input_file = self.output()['extracted'].path
-            fields, table_fields = self.get_fields()
+            fields, table_fields = self.get_mysql_fields()
 
             # check input_file has exists
             if not os.path.exists(input_file):
