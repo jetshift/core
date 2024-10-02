@@ -9,7 +9,7 @@ from jetshift_core.commands.migrations.mysql import migrate as migrate_mysql
 from jetshift_core.commands.migrations.clickhouse import migrate as migrate_clickhouse
 
 
-def run_migration(engine, migration_name, fresh):
+def run_migration(engine, migration_name, fresh, drop):
     try:
         file_path = f'database/migrations/{migration_name}.yaml'
         if not os.path.exists(file_path):
@@ -19,10 +19,10 @@ def run_migration(engine, migration_name, fresh):
         click.echo(f"Migrating table: {migration_name}")
 
         if engine == "mysql":
-            migrate_mysql(file_path, fresh)
+            migrate_mysql(file_path, fresh, drop)
 
         elif engine == "clickhouse":
-            migrate_clickhouse(file_path, fresh)
+            migrate_clickhouse(file_path, fresh, drop)
 
         else:
             click.echo(f"Engine '{engine}' is not supported.", err=True)
@@ -49,7 +49,7 @@ def list_available_migrations():
     return migration_names
 
 
-def run_all_migrations(engine, fresh):
+def run_all_migrations(engine, fresh, drop):
     available_migrations = list_available_migrations()
 
     if not available_migrations:
@@ -57,7 +57,7 @@ def run_all_migrations(engine, fresh):
         sys.exit(1)
 
     for migration_name in available_migrations:
-        run_migration(engine, migration_name, fresh)
+        run_migration(engine, migration_name, fresh, drop)
 
 
 @click.command(help="Run migrations for a specified database engine.")
@@ -68,14 +68,17 @@ def run_all_migrations(engine, fresh):
 @click.option(
     "-f", "--fresh", is_flag=True, help="Truncate the table before running the migration."
 )
-def main(migration, engine, fresh):
+@click.option(
+    "-d", "--drop", is_flag=True, help="Drop the table from the database."
+)
+def main(migration, engine, fresh, drop):
     click.echo(f"Running migrations for engine '{engine}'")
     click.echo("----------")
 
     if migration:
-        run_migration(engine, migration, fresh)
+        run_migration(engine, migration, fresh, drop)
     else:
-        run_all_migrations(engine, fresh)
+        run_all_migrations(engine, fresh, drop)
 
 
 if __name__ == "__main__":

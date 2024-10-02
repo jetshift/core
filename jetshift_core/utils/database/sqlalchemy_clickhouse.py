@@ -24,15 +24,15 @@ def get_engine():
         jprint(f"An unexpected error occurred: {e}", 'error')
 
 
-def create_table(table, fresh=None):
+def create_table(table, fresh=False, drop=False):
     engine = get_engine()
 
     # Drop the table if it exists
-    if fresh:
+    if fresh is True or drop is True:
         table.drop(engine, checkfirst=True)
         print(f"Dropped table: {table.name}")
 
-    if engine is not None:
+    if engine is not None and drop is False:
         try:
             metadata.create_all(engine)
         except SQLAlchemyError as e:

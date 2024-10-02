@@ -62,8 +62,8 @@ def yaml_table_definition(file_path):
     )
 
 
-def migrate(file_path, fresh):
+def migrate(file_path, fresh, drop):
     table_def = yaml_table_definition(file_path)
 
     # Create the table
-    create_table(table_def, fresh)
+    create_table(table_def, fresh, drop)
