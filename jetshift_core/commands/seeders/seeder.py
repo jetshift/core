@@ -37,7 +37,7 @@ def run_seeder(seeder_engine, seeder_name, records):
 @click.option("-n", default=10, help="Number of records to seed. Default is 10.")
 def main(engine, seeder, n):
     if seeder is None:
-        seeder_list = [os.path.splitext(os.path.basename(file))[0] for file in glob.glob('database/migrations/*.yaml')]
+        seeder_list = [os.path.splitext(os.path.basename(file))[0] for file in glob.glob('app/migrations/*.yaml')]
         if not seeder_list:
             click.echo("No seeders found.")
             return

@@ -11,6 +11,7 @@ type_mapping = {
     'DECIMAL': DECIMAL,
     'BOOLEAN': BOOLEAN,
     'FLOAT': FLOAT,
+    'DATE': DATE,
 }
 
 

@@ -22,7 +22,7 @@ def prepare_seeders(config):
     names = seeder_config.get('names', [])
 
     if 'all' in names:
-        names = [os.path.splitext(os.path.basename(file))[0] for file in glob.glob('database/migrations/*.yaml')]
+        names = [os.path.splitext(os.path.basename(file))[0] for file in glob.glob('app/migrations/*.yaml')]
 
     return engines, names
 

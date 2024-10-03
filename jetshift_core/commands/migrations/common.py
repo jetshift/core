@@ -1,28 +1,47 @@
 import decimal
 import random
-
-from faker import Faker
 import datetime
-
+from faker import Faker
 from jetshift_core.commands.seeders.common import min_max_id
 
 fake = Faker()
 
 
+def get_faker_value(command):
+    try:
+        result = eval(command, {"fake": fake})
+        return result
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
+
+def get_random_value(command):
+    try:
+        result = eval(command, {"random": random})
+        return result
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
+
 def generate_data_from_seeder_info(engine, column, field_length, seeder_info):
     value = None
 
-    if '(' in seeder_info and ')' in seeder_info:
-        seeder_function, seeder_param = seeder_info.split('(')
-        seeder_param = seeder_param.rstrip(')')
+    if 'fake.' in seeder_info:
+        value = get_faker_value(seeder_info)
+    elif 'random.' in seeder_info:
+        value = get_random_value(seeder_info)
     else:
-        seeder_function, seeder_param = seeder_info, ''
+        # seeder_function
+        if '(' in seeder_info and ')' in seeder_info:
+            seeder_function, seeder_param = seeder_info.split('(')
+            seeder_param = seeder_param.rstrip(')')
+        else:
+            seeder_function, seeder_param = seeder_info, ''
 
-    if seeder_function == 'email':
-        value = fake.email()
-
-    if seeder_function == 'min_max':
-        value = random.randint(*min_max_id(engine, seeder_param))
+        if seeder_function == 'min_max':
+            value = random.randint(*min_max_id(engine, seeder_param))
 
     return value
 
@@ -81,6 +100,6 @@ def generate_fake_data(engine, table, fields):
             value = None
 
         if value is not None:
-            formatted_row.append(value)
+            formatted_row.append(value.strip() if isinstance(value, str) else value)
 
     return tuple(formatted_row)

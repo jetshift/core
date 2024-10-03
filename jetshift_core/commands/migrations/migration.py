@@ -35,7 +35,7 @@ def run_migration(engine, migration_name, fresh, drop):
 
 
 def list_available_migrations():
-    package_path = f"database/migrations"
+    package_path = f"app/migrations"
 
     if not os.path.exists(package_path):
         click.echo(f"Migration directory '{package_path}' does not exist.", err=True)

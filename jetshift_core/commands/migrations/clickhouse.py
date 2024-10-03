@@ -10,6 +10,7 @@ type_mapping = {
     'DECIMAL': types.Decimal,
     'BOOLEAN': types.Boolean,
     'FLOAT': types.Float32,
+    'DATE': types.Date,
 }
 
 
@@ -19,7 +20,13 @@ def parse_column_type(col_type_str, nullable):
         params = params.split(')')[0].split(',')
         if len(params) == 1:
             length = int(params[0])
-            col_type = type_mapping.get(base_type, base_type)(length)
+
+            # Modify to handle VARCHAR correctly
+            if base_type == 'VARCHAR':
+                col_type = type_mapping.get(base_type, base_type)()
+            else:
+                col_type = type_mapping.get(base_type, base_type)(length)
+
         elif len(params) == 2:
             precision, scale = map(int, params)
             col_type = type_mapping.get(base_type, base_type)(precision, scale)
@@ -55,7 +62,14 @@ def yaml_table_definition(file_path):
             col_args['server_default'] = column['default']
         elif 'on_update' in column and column['on_update'] == 'CURRENT_TIMESTAMP':
             col_args['onupdate'] = func.now()
-        sqlalchemy_columns.append(Column(column['name'], col_type, **col_args))
+
+        custom_info = {
+            'seeder': column.get('seeder', None)
+        }
+
+        # print(col_type)
+
+        sqlalchemy_columns.append(Column(column['name'], col_type, info=custom_info, **col_args))
 
     # Define the table
     return Table(

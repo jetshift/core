@@ -23,6 +23,8 @@ def seed_clickhouse(engine, table_name, num_records):
             data = generate_fake_data(engine, table, fields)
             data = (primary_id,) + data
 
+            # print(data)
+
             formatted_data.append(data)
 
             primary_id += 1
