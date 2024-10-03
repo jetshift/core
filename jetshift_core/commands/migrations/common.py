@@ -33,15 +33,49 @@ def generate_data_from_seeder_info(engine, column, field_length, seeder_info):
     elif 'random.' in seeder_info:
         value = get_random_value(seeder_info)
     else:
-        # seeder_function
+        # seeder params
+        seeder_params = []
         if '(' in seeder_info and ')' in seeder_info:
             seeder_function, seeder_param = seeder_info.split('(')
-            seeder_param = seeder_param.rstrip(')')
-        else:
-            seeder_function, seeder_param = seeder_info, ''
+            seeder_params = seeder_param.rstrip(')')
 
-        if seeder_function == 'min_max':
-            value = random.randint(*min_max_id(engine, seeder_param))
+            seeder_params = [dep.strip() for dep in seeder_params.split(',')] if seeder_params else []
+        else:
+            seeder_function, seeder_param = seeder_info, None
+
+        if seeder_function == 'range':
+            range_table_name = seeder_params[0]
+            range_return_type = seeder_params[1] if len(seeder_params) > 1 else None
+            range_count = seeder_params[2] if len(seeder_params) > 2 else None
+            range_separator = seeder_params[3] if len(seeder_params) > 3 else 'comma'
+            range_range = seeder_params[4] == 'true' if len(seeder_params) > 4 else False
+
+            # min max values
+            min_id, max_id = min_max_id(engine, range_table_name)
+            value = random.randint(min_id, max_id)
+
+            # return type
+            if range_return_type is not None:
+                value = str(value)
+
+            # count
+            if range_count is not None:
+
+                total_numbers = int(range_count)
+
+                if range_range:
+                    total_numbers = random.randint(1, total_numbers)
+
+                range_values = set()
+                for i in range(total_numbers):
+                    range_values.add(random.randint(min_id, max_id))
+
+                # separator
+                separator = ','
+                if range_separator == 'space':
+                    separator = ' '
+
+                value = separator.join(map(str, range_values))
 
     return value
 

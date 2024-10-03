@@ -7,11 +7,13 @@ from jetshift_core.helpers.mysql import mysql_connect, get_mysql_table_definitio
 
 def seed_mysql(engine, table_name, num_records):
     try:
-        tables = find_dependencies(engine, table_name, num_records)
-        reversed_dependency_order = dict(reversed(tables.items()))
+        seed(engine, table_name, num_records)
 
-        for the_table_name, details in reversed_dependency_order.items():
-            seed(engine, the_table_name, num_records)
+        # tables = find_dependencies(engine, table_name, num_records)
+        # reversed_dependency_order = dict(reversed(tables.items()))
+        #
+        # for the_table_name, details in reversed_dependency_order.items():
+        #     seed(engine, the_table_name, num_records)
 
     except Exception as e:
         logger.error("%s", e)
