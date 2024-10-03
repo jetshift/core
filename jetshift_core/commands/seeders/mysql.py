@@ -1,10 +1,23 @@
 import click
 from config.logging import logger
 from jetshift_core.commands.migrations.common import generate_fake_data
+from jetshift_core.commands.seeders.common import find_dependencies
 from jetshift_core.helpers.mysql import mysql_connect, get_mysql_table_definition, get_last_id
 
 
 def seed_mysql(engine, table_name, num_records):
+    try:
+        tables = find_dependencies(engine, table_name, num_records)
+        reversed_dependency_order = dict(reversed(tables.items()))
+
+        for the_table_name, details in reversed_dependency_order.items():
+            seed(engine, the_table_name, num_records)
+
+    except Exception as e:
+        logger.error("%s", e)
+
+
+def seed(engine, table_name, num_records):
     table = get_mysql_table_definition(table_name)
     fields = [(col.name, col.type.python_type) for col in table.columns]
 
@@ -23,11 +36,11 @@ def seed_mysql(engine, table_name, num_records):
                 data = generate_fake_data(engine, table, fields)
                 data = (primary_id,) + data
 
-                print(data)
+                # print(data)
 
-                # placeholders = ', '.join(['%s'] * len(table_fields))
-                # mysql_query = f"INSERT INTO {table_name} ({', '.join(table_fields)}) VALUES ({placeholders})"
-                # cursor.execute(mysql_query, data)
+                placeholders = ', '.join(['%s'] * len(table_fields))
+                mysql_query = f"INSERT INTO {table_name} ({', '.join(table_fields)}) VALUES ({placeholders})"
+                cursor.execute(mysql_query, data)
 
                 primary_id += 1
                 inserted += 1

@@ -73,14 +73,19 @@ def get_last_id_from_clickhouse(table_name, primary_id='id'):
 
 
 def get_min_max_id(table_name):
-    try:
-        clickhouse = clickhouse_client()
-        result = clickhouse.execute(f"SELECT MIN(id), MAX(id) FROM {table_name}")
-        clickhouse.disconnect_connection()
+    from config.logging import logger
 
-        return result[0], result[1]
+    try:
+        # Use context management for connection handling (assuming clickhouse_client supports it)
+        with clickhouse_client() as clickhouse:
+            # Execute query and get the result
+            result = clickhouse.execute(f"SELECT MIN(id), MAX(id) FROM {table_name}")
+
+            # Return min and max if result is valid
+            return result[0] if result else (-1, -1)
     except Exception as e:
-        return 0, 0
+        logger.error("Failed to get min and max ID for table '%s': %s", table_name, e)
+        return -1, -1
 
 
 def insert_into_clickhouse(table_name, table_fields, data):

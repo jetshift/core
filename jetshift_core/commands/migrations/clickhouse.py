@@ -46,6 +46,7 @@ def yaml_table_definition(file_path):
     # Extract table name and columns
     table_name = schema['table_name']
     columns = schema['columns']
+    dependencies = schema.get('dependencies', '')
 
     # Define columns for SQLAlchemy table
     sqlalchemy_columns = []
@@ -63,20 +64,23 @@ def yaml_table_definition(file_path):
         elif 'on_update' in column and column['on_update'] == 'CURRENT_TIMESTAMP':
             col_args['onupdate'] = func.now()
 
-        custom_info = {
+        custom_column_info = {
             'seeder': column.get('seeder', None)
         }
 
-        # print(col_type)
+        sqlalchemy_columns.append(Column(column['name'], col_type, info=custom_column_info, **col_args))
 
-        sqlalchemy_columns.append(Column(column['name'], col_type, info=custom_info, **col_args))
+    custom_table_info = {
+        'dependencies': [dep.strip() for dep in dependencies.split(',')] if dependencies else []
+    }
 
     # Define the table
     return Table(
         table_name,
         metadata,
         *sqlalchemy_columns,
-        engines.MergeTree(order_by=['id'])
+        engines.MergeTree(order_by=['id']),
+        info=custom_table_info
     )
 
 
