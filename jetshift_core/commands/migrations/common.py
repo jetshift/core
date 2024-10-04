@@ -1,6 +1,7 @@
 import decimal
 import random
 import datetime
+import pandas as pd
 from faker import Faker
 from jetshift_core.commands.seeders.common import min_max_id
 
@@ -80,10 +81,44 @@ def generate_data_from_seeder_info(engine, column, field_length, seeder_info):
     return value
 
 
+def find_missing_fields_with_types(db_fields, csv_fields):
+    # Create a dictionary from db_fields for easy lookup
+    db_field_dict = {field[0]: field[1] for field in db_fields}
+
+    # Find missing fields by comparing CSV fields with database fields
+    missing_fields_with_types = [(field, db_field_dict[field]) for field in db_field_dict if field not in csv_fields]
+
+    return missing_fields_with_types
+
+
 def generate_fake_data(engine, table, fields):
     fake = Faker()
     formatted_row = []
 
+    # from csv
+    data_info = table.info.get('data', False)
+    if data_info:
+        df = pd.read_csv(f'app/migrations/records/{table.name}.csv')
+        csv_fields = df.columns.tolist()
+
+        # Find missing fields in the CSV file
+        # missing_fields_with_types = find_missing_fields_with_types(fields,csv_fields)
+        # total_missing_fields = len(missing_fields_with_types)
+        # print(missing_fields_with_types)
+
+        # for row in df.values:
+        #     the_row = tuple(row)
+        #     total_missing_fields = len(missing_fields_with_types)
+        #     for i in range(total_missing_fields):
+        #         the_row = the_row + (None,)
+        #     formatted_row.append(the_row)
+
+        for row in df.values:
+            formatted_row.append(tuple(row))
+
+        return csv_fields, formatted_row
+
+    # Generate fake data
     for field_name, field_type in fields:
         column = table.columns[field_name]
         field_length = column.type.length if hasattr(column.type, 'length') and field_type == str else None

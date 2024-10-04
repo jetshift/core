@@ -37,6 +37,7 @@ def yaml_table_definition(file_path):
     table_name = schema['table_name']
     columns = schema['columns']
     dependencies = schema.get('dependencies', '')
+    data = schema.get('data', False) if isinstance(schema.get('data', False), bool) else False
 
     # Define columns for SQLAlchemy table
     sqlalchemy_columns = []
@@ -62,7 +63,8 @@ def yaml_table_definition(file_path):
         sqlalchemy_columns.append(Column(column['name'], col_type, info=custom_column_info, **col_args))
 
     custom_table_info = {
-        'dependencies': [dep.strip() for dep in dependencies.split(',')] if dependencies else []
+        'dependencies': [dep.strip() for dep in dependencies.split(',')] if dependencies else [],
+        'data': data
     }
 
     # Define the table
