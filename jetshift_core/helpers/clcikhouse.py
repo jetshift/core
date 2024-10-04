@@ -65,6 +65,18 @@ def ping_clickhouse():
         }
 
 
+def check_table_has_data(table_name):
+    from config.logging import logger
+
+    try:
+        with clickhouse_client() as clickhouse:
+            result = clickhouse.execute(f"SELECT 1 FROM {table_name} LIMIT 1")
+            return len(result) > 0
+    except Exception as e:
+        logger.error("Failed to check data for table '%s': %s", table_name, e)
+        return False
+
+
 def get_last_id_from_clickhouse(table_name, primary_id='id'):
     clickhouse = clickhouse_client()
     data = clickhouse.execute(f"SELECT {primary_id} FROM {table_name} ORDER BY {primary_id} DESC LIMIT 1")

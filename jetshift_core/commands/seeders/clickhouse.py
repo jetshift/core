@@ -1,29 +1,37 @@
 import click
 from config.logging import logger
 from jetshift_core.commands.migrations.common import generate_fake_data
-from jetshift_core.commands.seeders.common import find_dependencies
+from jetshift_core.commands.seeders.common import find_dependencies, table_has_data
 from jetshift_core.helpers.clcikhouse import insert_into_clickhouse, get_last_id_from_clickhouse
 from jetshift_core.helpers.mysql import get_mysql_table_definition
 
 
-def seed_clickhouse(engine, table_name, num_records):
+def seed_clickhouse(engine, table_name, num_records, dependent_records, skip_dependencies, skip_dependencies_if_data_exists):
     try:
-        # seed(engine, table_name, num_records)
+        if skip_dependencies is False:
+            tables = find_dependencies(engine, table_name, dependent_records)
+            reversed_dependency_order = dict(reversed(tables.items()))
 
-        tables = find_dependencies(engine, table_name)
-        reversed_dependency_order = dict(reversed(tables.items()))
-
-        for the_table_name, details in reversed_dependency_order.items():
-            seed(engine, the_table_name, num_records)
-
+            for index, (the_table_name, details) in enumerate(reversed_dependency_order.items()):
+                if index == len(reversed_dependency_order) - 1:
+                    seed(engine, table_name, num_records)
+                else:
+                    seed(engine, the_table_name, details['dependent_records'], skip_dependencies_if_data_exists)
+        else:
+            seed(engine, table_name, num_records)
     except Exception as e:
         logger.error("%s", e)
 
 
-def seed(engine, table_name, num_records):
+def seed(engine, table_name, num_records, skip_if_data_exists=False):
     try:
         table = get_mysql_table_definition(table_name)
         fields = [(col.name, col.type.python_type) for col in table.columns]
+
+        # check if data is available in the table
+        check_table_has_data = table_has_data(engine, table_name)
+        if check_table_has_data is True and skip_if_data_exists is True:
+            return True
 
         # from csv
         data_info = table.info.get('data', False)

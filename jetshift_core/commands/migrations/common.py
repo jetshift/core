@@ -1,9 +1,12 @@
-import decimal
+import os
+import sys
 import random
+import decimal
 import datetime
 import pandas as pd
 from faker import Faker
 from jetshift_core.commands.seeders.common import min_max_id
+from jetshift_core.helpers.common import jprint
 
 fake = Faker()
 
@@ -98,7 +101,13 @@ def generate_fake_data(engine, table, fields):
     # from csv
     data_info = table.info.get('data', False)
     if data_info:
-        df = pd.read_csv(f'app/migrations/records/{table.name}.csv')
+
+        csv_path = f'app/migrations/seeders/{table.name}.csv'
+        if not os.path.exists(csv_path):
+            jprint(f"Seeder data '{csv_path}' does not exist.", 'error')
+            sys.exit(1)
+
+        df = pd.read_csv(csv_path)
         csv_fields = df.columns.tolist()
 
         # Find missing fields in the CSV file

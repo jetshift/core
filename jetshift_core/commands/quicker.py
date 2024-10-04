@@ -21,8 +21,10 @@ def prepare_seeders(config):
     engines = seeder_config.get('engines', ['mysql'])
     names = seeder_config.get('names', [])
 
-    if 'all' in names:
+    if any('all' in name for name in names):
+        params = next(name for name in names if 'all' in name).split()[1:]
         names = [os.path.splitext(os.path.basename(file))[0] for file in glob.glob('app/migrations/*.yaml')]
+        names = [f"{name} {' '.join(params)}" for name in names]
 
     return engines, names
 

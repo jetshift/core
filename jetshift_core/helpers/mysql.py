@@ -76,6 +76,17 @@ def get_mysql_database_table_definition(table_name):
     return table
 
 
+def check_table_has_data(table_name):
+    try:
+        connection = mysql_connect()
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT 1 FROM {table_name} LIMIT 1")
+            result = cursor.fetchone()
+            return result is not None
+    except Exception as e:
+        handle_mysql_error(e)
+
+
 def get_last_id(table_name, column_name='id'):
     try:
         connection = mysql_connect()
