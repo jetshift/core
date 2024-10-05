@@ -172,8 +172,11 @@ def generate_fake_data(engine, table, fields):
         elif field_type == decimal.Decimal:
             value = decimal.Decimal(fake.random_number(digits=5, fix_len=True) / 100.0)
 
+        elif field_type == datetime.date:
+            value = fake.date_between(start_date='-30d', end_date='now')
+
         elif field_type == datetime.datetime:
-            value = fake.date_time_this_decade()
+            value = fake.date_time_between(start_date='-30d', end_date='now')
         else:
             value = None
 
