@@ -52,7 +52,7 @@ def get_mysql_yaml_table_definition(table_name):
     from jetshift_core.helpers.common import jprint
     from jetshift_core.commands.migrations.mysql import yaml_table_definition
 
-    file_path = f'app/migrations/{table_name}.yaml'
+    file_path = f'app/migrations/{table_name}.yml'
     if not os.path.exists(file_path):
         jprint(f"Migration '{file_path}' does not exist.", 'error')
         sys.exit(1)

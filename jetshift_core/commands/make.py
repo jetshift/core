@@ -10,9 +10,9 @@ def make_migration(engine, new_migration_name):
     # Get the directory of stub files
     stub_root = os.path.join(Path(__file__).parent.parent, 'stubs')
     stub_dir = os.path.join(stub_root, 'migrations')
-    stub_path = os.path.join(stub_dir, 'sample.yaml')
+    stub_path = os.path.join(stub_dir, 'sample.yml')
 
-    migration_path = os.path.join(os.getcwd(), 'app', 'migrations', new_migration_name + '.yaml')
+    migration_path = os.path.join(os.getcwd(), 'app', 'migrations', new_migration_name + '.yml')
 
     # Check if the migration file already exists
     if os.path.exists(migration_path):
@@ -42,9 +42,9 @@ def make_job(new_job_name, jobtype):
     # Get the directory of stub files
     stub_root = os.path.join(Path(__file__).parent.parent, 'stubs')
     stub_dir = os.path.join(stub_root, 'jobs')
-    stub_path = os.path.join(stub_dir, jobtype + '.yaml')
+    stub_path = os.path.join(stub_dir, jobtype + '.yml')
 
-    job_path = os.path.join(os.getcwd(), 'app', 'jobs', new_job_name + '.yaml')
+    job_path = os.path.join(os.getcwd(), 'app', 'jobs', new_job_name + '.yml')
 
     # Check if the migration file already exists
     if os.path.exists(job_path):
@@ -73,9 +73,9 @@ def make_quicker(new_quicker_name):
     # Get the directory of stub files
     stub_root = os.path.join(Path(__file__).parent.parent, 'stubs')
     stub_dir = os.path.join(stub_root, 'quickers')
-    stub_path = os.path.join(stub_dir, 'sample.yaml')
+    stub_path = os.path.join(stub_dir, 'sample.yml')
 
-    quicker_path = os.path.join(os.getcwd(), 'app', 'quickers', new_quicker_name + '.yaml')
+    quicker_path = os.path.join(os.getcwd(), 'app', 'quickers', new_quicker_name + '.yml')
 
     # Check if the migration file already exists
     if os.path.exists(quicker_path):

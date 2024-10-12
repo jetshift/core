@@ -44,7 +44,7 @@ def run_seeder(seeder_engine, seeder_name, records, dependent_records, skip_depe
 )
 def main(engine, seeder, n, nd, sd, sdd):
     if seeder is None:
-        seeder_list = [os.path.splitext(os.path.basename(file))[0] for file in glob.glob('app/migrations/*.yaml')]
+        seeder_list = [os.path.splitext(os.path.basename(file))[0] for file in glob.glob('app/migrations/*.yml')]
         if not seeder_list:
             click.echo("No seeders found.")
             return

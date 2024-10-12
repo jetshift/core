@@ -23,7 +23,7 @@ def prepare_seeders(config):
 
     if any('all' in name for name in names):
         params = next(name for name in names if 'all' in name).split()[1:]
-        names = [os.path.splitext(os.path.basename(file))[0] for file in glob.glob('app/migrations/*.yaml')]
+        names = [os.path.splitext(os.path.basename(file))[0] for file in glob.glob('app/migrations/*.yml')]
         names = [f"{name} {' '.join(params)}" for name in names]
 
     return engines, names
@@ -33,7 +33,7 @@ def prepare_jobs(config, seeder_list):
     job_list = config.get('jobs', [])
 
     if 'all' in job_list:
-        job_list = [os.path.splitext(os.path.basename(file))[0] for file in glob.glob('app/jobs/*.yaml')]
+        job_list = [os.path.splitext(os.path.basename(file))[0] for file in glob.glob('app/jobs/*.yml')]
 
     if 'seeders' in job_list:
         job_list = [
@@ -44,7 +44,7 @@ def prepare_jobs(config, seeder_list):
 
 
 def run_quicker(quicker):
-    file_path = f'app/quickers/{quicker}.yaml'
+    file_path = f'app/quickers/{quicker}.yml'
     if not os.path.exists(file_path):
         click.echo(f"Quicker '{file_path}' does not exist.", err=True)
         sys.exit(1)

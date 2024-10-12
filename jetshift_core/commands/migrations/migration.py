@@ -9,7 +9,7 @@ from jetshift_core.commands.migrations.clickhouse import migrate as migrate_clic
 
 def run_migration(engine, migration_name, fresh, drop):
     try:
-        file_path = f'app/migrations/{migration_name}.yaml'
+        file_path = f'app/migrations/{migration_name}.yml'
         if not os.path.exists(file_path):
             click.echo(f"Migration '{file_path}' does not exist.", err=True)
             sys.exit(1)
@@ -41,7 +41,7 @@ def list_available_migrations():
         click.echo(f"Migration directory '{package_path}' does not exist.", err=True)
         sys.exit(1)
 
-    available_migrations = glob.glob(os.path.join(package_path, '*.yaml'))
+    available_migrations = glob.glob(os.path.join(package_path, '*.yml'))
     migration_names = [os.path.splitext(os.path.basename(migration))[0] for migration in available_migrations]
 
     return migration_names
