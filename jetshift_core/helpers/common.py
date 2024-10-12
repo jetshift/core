@@ -23,10 +23,8 @@ def jprint(message, type='info', all=False, key=None):
         click.echo(click.style(label, fg=color) + message + '\n', err=(type == 'error'))
 
 
-def create_data_directory():
-    data_folder_path = os.path.abspath('data')
-    if not os.path.exists(data_folder_path):
-        os.makedirs(data_folder_path)
+def create_data_directory(directory='data'):
+    os.makedirs(directory, exist_ok=True)
 
 
 def to_pascal_case(job_name):

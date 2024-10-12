@@ -11,7 +11,7 @@ def parse_seeder_string(item):
         "n": 10,  # Default for -n
         "nd": 5,  # Default for -nd
         "sd": False,  # Default for -sd
-        "sdd": False  # Default for -sdd
+        "sde": False  # Default for -sde
     }
 
     # Parse each part of the command
@@ -24,8 +24,8 @@ def parse_seeder_string(item):
             seeder_info["nd"] = int(parts[index + 1])
         elif part == "-sd":
             seeder_info["sd"] = True
-        elif part == "-sdd":
-            seeder_info["sdd"] = True
+        elif part == "-sde":
+            seeder_info["sde"] = True
 
     return seeder_info
 
@@ -50,7 +50,7 @@ def run_seeders(items, engine='mysql'):
         n = parsed_info.get("n", 10)
         nd = parsed_info.get("nd", 5)
         sd = parsed_info.get("sd", False)
-        sdd = parsed_info.get("sdd", False)
+        sde = parsed_info.get("sde", False)
 
         # Dynamically construct the command arguments
         args = [
@@ -63,8 +63,8 @@ def run_seeders(items, engine='mysql'):
         # Add flags if they are set to True
         if sd:
             args.append("-sd")
-        if sdd:
-            args.append("-sdd")
+        if sde:
+            args.append("-sde")
 
         # Invoke the command using the runner
         result = runner.invoke(run_seeder, args)

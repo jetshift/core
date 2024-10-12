@@ -4,6 +4,7 @@ import os
 import click
 from jetshift_core.commands.seeders.mysql import seed_mysql
 from jetshift_core.commands.seeders.clickhouse import seed_clickhouse
+from jetshift_core.commands.seeders.csv import seed_csv
 
 
 def run_seeder(seeder_engine, seeder_name, records, dependent_records, skip_dependencies, skip_dependencies_if_data_exists):
@@ -15,6 +16,9 @@ def run_seeder(seeder_engine, seeder_name, records, dependent_records, skip_depe
 
         elif seeder_engine == "clickhouse":
             seed_clickhouse(seeder_engine, seeder_name, records, dependent_records, skip_dependencies, skip_dependencies_if_data_exists)
+
+        elif seeder_engine == "csv":
+            seed_csv(seeder_engine, seeder_name, records, dependent_records, skip_dependencies, skip_dependencies_if_data_exists)
 
         else:
             click.echo(f"Seeder engine '{seeder_engine}' is not supported.", err=True)
@@ -40,9 +44,9 @@ def run_seeder(seeder_engine, seeder_name, records, dependent_records, skip_depe
     "-sd", is_flag=True, default=False, help="Skip dependent seeders. Default is False."
 )
 @click.option(
-    "-sdd", is_flag=True, default=False, help="Skip dependent seeders if data already exists. Default is False."
+    "-sde", is_flag=True, default=False, help="Skip dependent seeders if data already exists. Default is False."
 )
-def main(engine, seeder, n, nd, sd, sdd):
+def main(engine, seeder, n, nd, sd, sde):
     if seeder is None:
         seeder_list = [os.path.splitext(os.path.basename(file))[0] for file in glob.glob('app/migrations/*.yml')]
         if not seeder_list:
@@ -50,9 +54,9 @@ def main(engine, seeder, n, nd, sd, sdd):
             return
 
         for seeder_name in seeder_list:
-            run_seeder(engine, seeder_name, n, nd, sd, sdd)
+            run_seeder(engine, seeder_name, n, nd, sd, sde)
     else:
-        run_seeder(engine, seeder, n, nd, sd, sdd)
+        run_seeder(engine, seeder, n, nd, sd, sde)
 
 
 if __name__ == "__main__":
