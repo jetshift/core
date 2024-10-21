@@ -11,7 +11,8 @@ def run_yaml_job(job_name):
     from config.luigi import luigi, local_scheduler
 
     # Load configuration from YAML file
-    file_path = f'app/jobs/{job_name}.yml'
+    app_path = os.environ.get('APP_PATH', '')
+    file_path = f'{app_path}/app/jobs/{job_name}.yml'
 
     if not os.path.exists(file_path):
         jprint(f"Job config file '{file_path}' not found.", 'error')

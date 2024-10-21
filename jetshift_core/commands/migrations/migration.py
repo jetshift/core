@@ -3,13 +3,15 @@ import sys
 import os
 import click
 
+from config.logging import logger
 from jetshift_core.commands.migrations.mysql import migrate as migrate_mysql
 from jetshift_core.commands.migrations.clickhouse import migrate as migrate_clickhouse
 
 
 def run_migration(engine, migration_name, fresh, drop):
     try:
-        file_path = f'app/migrations/{migration_name}.yml'
+        app_path = os.environ.get('APP_PATH', '')
+        file_path = f'{app_path}/app/migrations/{migration_name}.yml'
         if not os.path.exists(file_path):
             click.echo(f"Migration '{file_path}' does not exist.", err=True)
             sys.exit(1)
