@@ -12,7 +12,7 @@ def run_yaml_job(job_name):
 
     # Load configuration from YAML file
     app_path = os.environ.get('APP_PATH', '')
-    file_path = f'{app_path}/app/jobs/{job_name}.yml'
+    file_path = f'{app_path}app/jobs/{job_name}.yml'
 
     if not os.path.exists(file_path):
         jprint(f"Job config file '{file_path}' not found.", 'error')

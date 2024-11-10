@@ -11,7 +11,7 @@ from jetshift_core.commands.migrations.clickhouse import migrate as migrate_clic
 def run_migration(engine, migration_name, fresh, drop):
     try:
         app_path = os.environ.get('APP_PATH', '')
-        file_path = f'{app_path}/app/migrations/{migration_name}.yml'
+        file_path = f'{app_path}app/migrations/{migration_name}.yml'
         if not os.path.exists(file_path):
             click.echo(f"Migration '{file_path}' does not exist.", err=True)
             sys.exit(1)
