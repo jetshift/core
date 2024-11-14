@@ -42,21 +42,24 @@ def generate_data_from_seeder_info(engine, column, field_length, seeder_info):
         if '(' in seeder_info and ')' in seeder_info:
             seeder_function, seeder_param = seeder_info.split('(')
             seeder_params = seeder_param.rstrip(')')
-
             seeder_params = [dep.strip() for dep in seeder_params.split(',')] if seeder_params else []
         else:
             seeder_function, seeder_param = seeder_info, None
 
         if seeder_function == 'range':
-            range_table_name = seeder_params[0]
-            range_return_type = seeder_params[1] if len(seeder_params) > 1 else None
-            range_count = seeder_params[2] if len(seeder_params) > 2 else None
-            range_separator = seeder_params[3] if len(seeder_params) > 3 else 'comma'
-            range_range = seeder_params[4] == 'true' if len(seeder_params) > 4 else False
+            range_table_name = seeder_params[0]  # table name
+            range_return_type = seeder_params[1] if len(seeder_params) > 1 else None  # return type
+            range_count = seeder_params[2] if len(seeder_params) > 2 else None  # count
+            range_separator = seeder_params[3] if len(seeder_params) > 3 else 'comma'  # separator
+            range_range = seeder_params[4] == 'true' if len(seeder_params) > 4 else False  # range
 
             # min max values
             min_id, max_id = min_max_id(engine, range_table_name)
             value = random.randint(min_id, max_id)
+
+            column_nullable = column.info.get('nullable', None)
+            if column_nullable:
+                value = random.choice([value, 'null'])
 
             # return type
             if range_return_type is not None:
@@ -141,9 +144,9 @@ def generate_fake_data(engine, table, fields):
 
         # print(column.type)
 
-        seeder_info = column.info.get('seeder', None)
-        if seeder_info is not None:
-            value = generate_data_from_seeder_info(engine, column, field_length, seeder_info)
+        column_seeder = column.info.get('seeder', None)
+        if column_seeder is not None:
+            value = generate_data_from_seeder_info(engine, column, field_length, column_seeder)
 
         elif field_type == int and field_name != 'id':
             if field_length is not None:
@@ -180,7 +183,15 @@ def generate_fake_data(engine, table, fields):
         else:
             value = None
 
-        if value is not None:
+        # Check if the column is nullable and randomly set the value to 'null'
+        column_nullable = column.info.get('nullable', None)
+        if column_nullable and column_seeder is None:
+            value = random.choice([value, 'null'])
+
+        # Finally, append the formatted value to the row
+        if value == 'null':
+            formatted_row.append(None)
+        elif value is not None:
             formatted_row.append(value.strip() if isinstance(value, str) else value)
 
     return tuple(formatted_row)

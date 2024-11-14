@@ -106,14 +106,12 @@ def insert_into_clickhouse(table_name, table_fields, data):
 
     last_inserted_id = None
 
-    # print()
-    # print(data)
-    # print()
-
     if data:
         try:
             clickhouse = clickhouse_client()
             clickhouse_query = f"INSERT INTO {table_name} ({', '.join(table_fields)}) VALUES"
+            # Replace None with NULL in the data
+            data = [[None if value is None else value for value in row] for row in data]
             clickhouse.execute(clickhouse_query, data)
             clickhouse.disconnect_connection()
 

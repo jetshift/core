@@ -57,7 +57,8 @@ def yaml_table_definition(file_path):
             col_args['onupdate'] = func.now()
 
         custom_column_info = {
-            'seeder': column.get('seeder', None)
+            'nullable': column.get('nullable', False),
+            'seeder': column.get('seeder', None),
         }
 
         sqlalchemy_columns.append(Column(column['name'], col_type, info=custom_column_info, **col_args))
