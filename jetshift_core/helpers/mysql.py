@@ -118,8 +118,9 @@ def handle_mysql_error(error):
     logger.error(f"MySQL connection failed: {str(error)}")
 
 
-def fetch_and_extract_limit(self, engine, table_fields):
+def fetch_and_extract_limit(self, source_engine, target_engine):
     import pandas as pd
+    from sqlalchemy import MetaData, Table, select
     from jetshift_core.helpers.common import clear_files, create_data_directory
     from jetshift_core.helpers.clcikhouse import get_last_id_from_clickhouse, truncate_table as truncate_clickhouse_table
 
@@ -130,28 +131,38 @@ def fetch_and_extract_limit(self, engine, table_fields):
     extract_limit = self.extract_limit
     primary_id = self.primary_id
 
-    if truncate_table is True:
-        truncate_clickhouse_table(table_name)
+    if truncate_table:
+        truncate_clickhouse_table(target_engine, table_name)
 
-    query = f"SELECT {', '.join(table_fields)} FROM {table_name}"
+    # Reflect the table structure
+    metadata = MetaData()
+    table = Table(table_name, metadata, autoload_with=source_engine)
 
+    # Start building the SQLAlchemy query
+    stmt = select(table)
+
+    # If primary_id is defined, apply the last_id filtering
     if primary_id:
-        last_id = get_last_id_from_clickhouse(table_name, primary_id)
+        last_id = get_last_id_from_clickhouse(target_engine, table_name, primary_id)
         print(f'Last ClickHouse {table_name} {primary_id}: ', last_id)
-        query += f" WHERE {primary_id} > {last_id}"
+        stmt = stmt.where(table.c[primary_id] > last_id)
 
-    query += f" LIMIT {extract_limit} OFFSET {extract_offset}"
+    # Apply limit and offset
+    stmt = stmt.limit(extract_limit).offset(extract_offset)
 
-    df = pd.read_sql(query, engine)
+    # Use pandas to execute and fetch the query result
+    df = pd.read_sql(stmt, source_engine)
 
+    # Clear old files and save new CSV
     clear_files(table_name)
     create_data_directory()
     df.to_csv(output_path, index=False)
 
 
-def fetch_and_extract_chunk(self, engine, table_fields):
+def fetch_and_extract_chunk(self, source_engine, target_engine):
     import pandas as pd
     import time
+    from sqlalchemy import MetaData, Table, select, func
     from jetshift_core.helpers.common import clear_files, create_data_directory
     from jetshift_core.helpers.clcikhouse import get_last_id_from_clickhouse, truncate_table as truncate_clickhouse_table
 
@@ -163,37 +174,51 @@ def fetch_and_extract_chunk(self, engine, table_fields):
     primary_id = self.primary_id
     sleep_interval = self.sleep_interval
 
-    if truncate_table is True:
-        truncate_clickhouse_table(table_name)
+    if truncate_table:
+        truncate_clickhouse_table(target_engine, table_name)
 
     clear_files(table_name)
     create_data_directory()
 
-    if primary_id:
-        last_id = get_last_id_from_clickhouse(table_name, primary_id)
-        print(f'Last {table_name} {primary_id} (clickhouse): ', last_id)
-        count_query = f"SELECT COUNT(*) FROM {table_name} WHERE {primary_id} > {last_id}"
-        base_query = f"SELECT {', '.join(table_fields)} FROM {table_name} WHERE {primary_id} > {last_id} LIMIT {extract_chunk_size}"
-    else:
-        count_query = f"SELECT COUNT(*) FROM {table_name}"
-        base_query = f"SELECT {', '.join(table_fields)} FROM {table_name} LIMIT {extract_chunk_size}"
+    # Reflect the table
+    metadata = MetaData()
+    table = Table(table_name, metadata, autoload_with=source_engine)
 
-    total_rows = pd.read_sql(count_query, engine).iloc[0, 0]
+    # Build count query
+    stmt_count = select(func.count()).select_from(table)
+    last_id = None
+    if primary_id:
+        last_id = get_last_id_from_clickhouse(target_engine, table_name, primary_id)
+        print(f'Last {table_name} {primary_id} (clickhouse): ', last_id)
+        stmt_count = stmt_count.where(table.c[primary_id] > last_id)
+
+    # Execute count properly
+    with source_engine.connect() as connection:
+        total_rows = connection.execute(stmt_count).scalar()
+
     if total_rows > 0:
-        total_rows = total_rows - extract_offset
+        total_rows -= extract_offset
     print(f"Total rows in {table_name} (mysql): {total_rows}")
 
     loops = (total_rows + extract_chunk_size - 1) // extract_chunk_size
     print(f"Total loops: {loops}")
-
     print(f"\nExtracting data...")
-    for i in range(loops):
-        if i == 0:
-            offset_query = f"{base_query} OFFSET {extract_offset}"
-        else:
-            offset_query = f"{base_query} OFFSET {(i * extract_chunk_size) + extract_offset}"
 
-        df = pd.read_sql(offset_query, engine)
+    # Extract in chunks
+    for i in range(loops):
+        stmt = select(table)
+
+        if primary_id and last_id is not None:
+            stmt = stmt.where(table.c[primary_id] > last_id)
+
+        # Apply limit and dynamic offset for each loop
+        current_offset = (i * extract_chunk_size) + extract_offset
+        stmt = stmt.limit(extract_chunk_size).offset(current_offset)
+
+        # Read data into DataFrame
+        df = pd.read_sql(stmt, source_engine)
+
+        # Append chunk to CSV
         df.to_csv(output_path, mode='a', header=(i == 0), index=False)
 
         print(f"Extracted {len(df)} rows from {table_name}. Loop {i + 1}/{loops}")

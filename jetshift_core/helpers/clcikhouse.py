@@ -78,11 +78,18 @@ def check_table_has_data(table_name):
         return False
 
 
-def get_last_id_from_clickhouse(table_name, primary_id='id'):
-    clickhouse = clickhouse_client()
-    data = clickhouse.execute(f"SELECT {primary_id} FROM {table_name} ORDER BY {primary_id} DESC LIMIT 1")
-    clickhouse.disconnect_connection()
-    return int(data[0][0]) if data else 0
+def get_last_id_from_clickhouse(target_engine, table_name, primary_id='id'):
+    from sqlalchemy import MetaData, Table, select, desc
+
+    metadata = MetaData()
+    table = Table(table_name, metadata, autoload_with=target_engine)
+
+    stmt = select(table.c[primary_id]).order_by(desc(table.c[primary_id])).limit(1)
+
+    with target_engine.connect() as connection:
+        result = connection.execute(stmt).fetchone()
+
+    return int(result[0]) if result else 0
 
 
 def get_min_max_id(table_name):
@@ -102,34 +109,45 @@ def get_min_max_id(table_name):
         return -1, -1
 
 
-def insert_into_clickhouse(table_name, table_fields, data):
-    from jetshift_core.helpers.common import send_discord_message
+def insert_into_clickhouse(target_engine, table_name, data_chunk):
+    import pandas as pd
+    from sqlalchemy import MetaData, Table, insert
     from jetshift_core.js_logger import get_logger
     logger = get_logger(__name__)
 
     last_inserted_id = None
 
-    if data:
+    if not data_chunk.empty:
         try:
-            clickhouse = clickhouse_client()
-            clickhouse_query = f"INSERT INTO {table_name} ({', '.join(table_fields)}) VALUES"
-            # Replace None with NULL in the data
-            data = [[None if value is None else value for value in row] for row in data]
-            clickhouse.execute(clickhouse_query, data)
-            clickhouse.disconnect_connection()
+            # # 🔄 Force datetime conversion for all potential datetime columns
+            # for col in data_chunk.columns:
+            #     if 'date' in col or 'time' in col:  # Optional: Match your column patterns
+            #         try:
+            #             data_chunk[col] = pd.to_datetime(data_chunk[col], errors='coerce')
+            #         except Exception as e:
+            #             logger.warning(f"Failed to convert column {col} to datetime: {e}")
 
-            # Check if 'id' is in the table fields and get the last inserted id
-            if 'id' in table_fields:
-                last_inserted_id = data[-1][table_fields.index('id')]
+            # Reflect the ClickHouse table
+            metadata = MetaData()
+            table = Table(table_name, metadata, autoload_with=target_engine)
 
-                return True, last_inserted_id
-            else:
-                return True, last_inserted_id
-        except Error as e:
+            # Convert DataFrame chunk to list of dicts for SQLAlchemy insert
+            records = data_chunk.where(pd.notnull(data_chunk), None).to_dict(orient='records')
+
+            with target_engine.connect() as connection:
+                connection.execute(insert(table), records)
+
+            # If 'id' column exists, fetch the last inserted 'id' from the chunk
+            if 'id' in data_chunk.columns:
+                last_inserted_id = data_chunk['id'].iloc[-1]
+
+            return True, last_inserted_id
+
+        except Exception as e:
             logger.error(f"{table_name}: Error inserting into ClickHouse. Error: {str(e)}")
             return False, last_inserted_id
     else:
-        send_discord_message(f'{table_name}: No data to insert')
+        logger.error(f'{table_name}: No data to insert')
         return False, last_inserted_id
 
 
@@ -166,19 +184,15 @@ def insert_update_clickhouse(table_name, table_fields, data):
         return False
 
 
-def truncate_table(table_name):
+def truncate_table(target_engine, table_name):
+    from sqlalchemy import text
     from jetshift_core.js_logger import get_logger
     logger = get_logger(__name__)
 
     try:
-        clickhouse = clickhouse_client()
-
-        # Generate the bulk update query
-        clickhouse_query = f"""TRUNCATE TABLE {table_name}"""
-
-        clickhouse.execute(clickhouse_query)
-        clickhouse.disconnect_connection()
+        with target_engine.connect() as connection:
+            connection.execute(text(f"TRUNCATE TABLE {table_name}"))
         return True
-    except Error as e:
+    except Exception as e:
         logger.error(f'{table_name}: Failed to truncate table. Error: {str(e)}')
         return False
