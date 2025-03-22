@@ -2,6 +2,7 @@
 *.pyc
 __pycache__/
 venv/
+.venv
 *.egg-info/
 dist/
 build/
@@ -11,6 +12,10 @@ build/
 .idea/
 *.sublime-project
 *.sublime-workspace
+
+# Environments
+.env
+env.bak/
 
 # Dependency directories
 env/

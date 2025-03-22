@@ -2,7 +2,9 @@ import os
 import requests
 import importlib
 import multiprocessing
-from config.logging import logger
+from jetshift_core.js_logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def jprint(message, type='info', all=False, key=None):

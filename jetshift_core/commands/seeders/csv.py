@@ -1,11 +1,13 @@
 import os
 import click
-from config.logging import logger
+from jetshift_core.js_logger import get_logger
 import pandas as pd
 from jetshift_core.commands.migrations.common import generate_fake_data
 from jetshift_core.commands.seeders.common import find_dependencies, table_has_data
 from jetshift_core.helpers.common import create_data_directory
 from jetshift_core.helpers.mysql import get_mysql_table_definition
+
+logger = get_logger(__name__)
 
 
 def seed_csv(engine, table_name, num_records, dependent_records, skip_dependencies, skip_dependencies_if_data_exists):

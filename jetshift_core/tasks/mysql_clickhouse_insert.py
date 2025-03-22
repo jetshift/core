@@ -1,11 +1,13 @@
 import luigi
 import pandas as pd
 import time
-from config.logging import logger
+from jetshift_core.js_logger import get_logger
 from luigi.format import UTF8
 from jetshift_core.helpers.common import *
 from jetshift_core.helpers.mysql import *
 from jetshift_core.helpers.clcikhouse import insert_into_clickhouse, get_last_id_from_clickhouse
+
+logger = get_logger(__name__)
 
 
 class BaseTask(luigi.Task):
@@ -111,10 +113,10 @@ class BaseTask(luigi.Task):
         print('Running job for table: ', self.table_name)
 
         # Step 1: Extract data from RDS
-        self.extract()
+        # self.extract()
 
         # Step 2: Transform the extracted data
         # self.transform()
 
         # Step 3: Load transformed data to ClickHouse
-        self.load()
+        # self.load()

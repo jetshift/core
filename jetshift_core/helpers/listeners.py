@@ -4,16 +4,15 @@ from jetshift_core.helpers.common import run_job_in_new_process, send_discord_me
 import multiprocessing
 from rq import Queue
 from config.database import redis_connection
-from config.logging import logger
-
+from jetshift_core.js_logger import get_logger
 
 # Load environment variables
 load_dotenv()
+logger = get_logger(__name__)
 
 
 def listen(channel, handle_message, timeout=1, poll_interval=0.01):
     import time
-    from config.logging import logger
     from config.database import redis_connection
 
     redis_conn = redis_connection()

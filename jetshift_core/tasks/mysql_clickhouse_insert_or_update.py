@@ -5,7 +5,9 @@ from jetshift_core.helpers.clcikhouse import insert_update_clickhouse
 import luigi
 import pandas as pd
 import pymysql
-from config.logging import logger
+from jetshift_core.js_logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class BaseTask(luigi.Task):

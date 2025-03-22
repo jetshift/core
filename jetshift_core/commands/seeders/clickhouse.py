@@ -1,9 +1,11 @@
 import click
-from config.logging import logger
+from jetshift_core.js_logger import get_logger
 from jetshift_core.commands.migrations.common import generate_fake_data
 from jetshift_core.commands.seeders.common import find_dependencies, table_has_data
 from jetshift_core.helpers.clcikhouse import insert_into_clickhouse, get_last_id_from_clickhouse
 from jetshift_core.helpers.mysql import get_mysql_table_definition
+
+logger = get_logger(__name__)
 
 
 def seed_clickhouse(engine, table_name, num_records, dependent_records, skip_dependencies, skip_dependencies_if_data_exists):

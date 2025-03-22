@@ -66,7 +66,8 @@ def ping_clickhouse():
 
 
 def check_table_has_data(table_name):
-    from config.logging import logger
+    from jetshift_core.js_logger import get_logger
+    logger = get_logger(__name__)
 
     try:
         with clickhouse_client() as clickhouse:
@@ -85,7 +86,8 @@ def get_last_id_from_clickhouse(table_name, primary_id='id'):
 
 
 def get_min_max_id(table_name):
-    from config.logging import logger
+    from jetshift_core.js_logger import get_logger
+    logger = get_logger(__name__)
 
     try:
         # Use context management for connection handling (assuming clickhouse_client supports it)
@@ -102,7 +104,8 @@ def get_min_max_id(table_name):
 
 def insert_into_clickhouse(table_name, table_fields, data):
     from jetshift_core.helpers.common import send_discord_message
-    from config.logging import logger
+    from jetshift_core.js_logger import get_logger
+    logger = get_logger(__name__)
 
     last_inserted_id = None
 
@@ -164,7 +167,8 @@ def insert_update_clickhouse(table_name, table_fields, data):
 
 
 def truncate_table(table_name):
-    from config.logging import logger
+    from jetshift_core.js_logger import get_logger
+    logger = get_logger(__name__)
 
     try:
         clickhouse = clickhouse_client()

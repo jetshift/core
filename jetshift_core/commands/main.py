@@ -1,6 +1,6 @@
 import click
 import sys
-from config.logging import logger
+from jetshift_core.js_logger import get_logger
 
 from jetshift_core.commands.banners import banner
 from jetshift_core.commands.dev import main as dev_main
@@ -11,6 +11,8 @@ from jetshift_core.commands.job import main as job
 from jetshift_core.commands.quicker import main as quicker
 from jetshift_core.commands.listener import main as listener
 from jetshift_core.commands.version import show_version
+
+logger = get_logger(__name__)
 
 
 @click.group(invoke_without_command=True)

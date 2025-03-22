@@ -113,7 +113,8 @@ def get_min_max_id(table_name):
 
 
 def handle_mysql_error(error):
-    from config.logging import logger
+    from jetshift_core.js_logger import get_logger
+    logger = get_logger(__name__)
     logger.error(f"MySQL connection failed: {str(error)}")
 
 

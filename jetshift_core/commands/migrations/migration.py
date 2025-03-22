@@ -3,9 +3,11 @@ import sys
 import os
 import click
 
-from config.logging import logger
+from jetshift_core.js_logger import get_logger
 from jetshift_core.commands.migrations.mysql import migrate as migrate_mysql
 from jetshift_core.commands.migrations.clickhouse import migrate as migrate_clickhouse
+
+logger = get_logger(__name__)
 
 
 def run_migration(engine, migration_name, fresh, drop):
