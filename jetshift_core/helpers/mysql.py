@@ -118,32 +118,32 @@ def handle_mysql_error(error):
     logger.error(f"MySQL connection failed: {str(error)}")
 
 
-def fetch_and_extract_limit(self, source_engine, target_engine):
+def fetch_and_extract_limit(params):
     import pandas as pd
     from sqlalchemy import MetaData, Table, select
     from jetshift_core.helpers.common import clear_files, create_data_directory
     from jetshift_core.helpers.clcikhouse import get_last_id_from_clickhouse, truncate_table as truncate_clickhouse_table
 
-    table_name = self.table_name
-    truncate_table = self.truncate_table
-    output_path = self.output()['extracted'].path
-    extract_offset = self.extract_offset
-    extract_limit = self.extract_limit
-    primary_id = self.primary_id
+    table_name = params.source_table
+    truncate_table = params.truncate_table
+    output_path = params.output_path
+    extract_offset = params.extract_offset
+    extract_limit = params.extract_limit
+    primary_id = params.primary_id
 
     if truncate_table:
-        truncate_clickhouse_table(target_engine, table_name)
+        truncate_clickhouse_table(params.target_engine, table_name)
 
     # Reflect the table structure
     metadata = MetaData()
-    table = Table(table_name, metadata, autoload_with=source_engine)
+    table = Table(table_name, metadata, autoload_with=params.source_engine)
 
     # Start building the SQLAlchemy query
     stmt = select(table)
 
     # If primary_id is defined, apply the last_id filtering
     if primary_id:
-        last_id = get_last_id_from_clickhouse(target_engine, table_name, primary_id)
+        last_id = get_last_id_from_clickhouse(params.target_engine, table_name, primary_id)
         print(f'Last ClickHouse {table_name} {primary_id}: ', last_id)
         stmt = stmt.where(table.c[primary_id] > last_id)
 
@@ -151,7 +151,7 @@ def fetch_and_extract_limit(self, source_engine, target_engine):
     stmt = stmt.limit(extract_limit).offset(extract_offset)
 
     # Use pandas to execute and fetch the query result
-    df = pd.read_sql(stmt, source_engine)
+    df = pd.read_sql(stmt, params.source_engine)
 
     # Clear old files and save new CSV
     clear_files(table_name)
@@ -159,41 +159,41 @@ def fetch_and_extract_limit(self, source_engine, target_engine):
     df.to_csv(output_path, index=False)
 
 
-def fetch_and_extract_chunk(self, source_engine, target_engine):
+def fetch_and_extract_chunk(params):
     import pandas as pd
     import time
     from sqlalchemy import MetaData, Table, select, func
     from jetshift_core.helpers.common import clear_files, create_data_directory
     from jetshift_core.helpers.clcikhouse import get_last_id_from_clickhouse, truncate_table as truncate_clickhouse_table
 
-    table_name = self.table_name
-    truncate_table = self.truncate_table
-    output_path = self.output()['extracted'].path
-    extract_offset = self.extract_offset
-    extract_chunk_size = self.extract_chunk_size
-    primary_id = self.primary_id
-    sleep_interval = self.sleep_interval
+    table_name = params.source_table
+    truncate_table = params.truncate_table
+    output_path = params.output_path
+    extract_offset = params.extract_offset
+    extract_chunk_size = params.extract_chunk_size
+    primary_id = params.primary_id
+    sleep_interval = params.sleep_interval
 
     if truncate_table:
-        truncate_clickhouse_table(target_engine, table_name)
+        truncate_clickhouse_table(params.target_engine, table_name)
 
     clear_files(table_name)
     create_data_directory()
 
     # Reflect the table
     metadata = MetaData()
-    table = Table(table_name, metadata, autoload_with=source_engine)
+    table = Table(table_name, metadata, autoload_with=params.source_engine)
 
     # Build count query
     stmt_count = select(func.count()).select_from(table)
     last_id = None
     if primary_id:
-        last_id = get_last_id_from_clickhouse(target_engine, table_name, primary_id)
+        last_id = get_last_id_from_clickhouse(params.target_engine, table_name, primary_id)
         print(f'Last {table_name} {primary_id} (clickhouse): ', last_id)
         stmt_count = stmt_count.where(table.c[primary_id] > last_id)
 
     # Execute count properly
-    with source_engine.connect() as connection:
+    with params.source_engine.connect() as connection:
         total_rows = connection.execute(stmt_count).scalar()
 
     if total_rows > 0:
@@ -216,7 +216,7 @@ def fetch_and_extract_chunk(self, source_engine, target_engine):
         stmt = stmt.limit(extract_chunk_size).offset(current_offset)
 
         # Read data into DataFrame
-        df = pd.read_sql(stmt, source_engine)
+        df = pd.read_sql(stmt, params.source_engine)
 
         # Append chunk to CSV
         df.to_csv(output_path, mode='a', header=(i == 0), index=False)

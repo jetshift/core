@@ -9,6 +9,7 @@ homepage = "https://jetshift.vercel.app"
 
 [tool.poetry.dependencies]
 python = "^3.9"
+prefect = "3.2.14"
 luigi = "3.6.0"
 pymysql = "1.1.1"
 clickhouse-driver = "0.2.9"
