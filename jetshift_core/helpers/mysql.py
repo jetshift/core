@@ -1,3 +1,25 @@
+def map_mysql_to_clickhouse(mysql_type):
+    mysql_to_clickhouse = {
+        'int': 'Int32',
+        'bigint': 'Int64',
+        'varchar': 'String',
+        'char': 'String',
+        'text': 'String',
+        'tinytext': 'String',
+        'mediumtext': 'String',
+        'longtext': 'String',
+        'datetime': 'DateTime',
+        'timestamp': 'DateTime',
+        'float': 'Float32',
+        'double': 'Float64',
+        'tinyint': 'UInt8',
+        'smallint': 'Int16',
+        'mediumint': 'Int32',
+        'decimal': 'Float64'
+    }
+    return mysql_to_clickhouse.get(mysql_type.lower(), 'String')
+
+
 def get_mysql_credentials():
     from config.database import mysql
     credentials = mysql()
@@ -114,15 +136,18 @@ def get_min_max_id(table_name):
 
 def handle_mysql_error(error):
     from jetshift_core.js_logger import get_logger
-    logger = get_logger(__name__)
-    logger.error(f"MySQL connection failed: {str(error)}")
+    js_logger = get_logger()
+    js_logger.error(f"MySQL connection failed: {str(error)}")
 
 
 def fetch_and_extract_limit(params):
     import pandas as pd
+    from jetshift_core.js_logger import get_logger
     from sqlalchemy import MetaData, Table, select
     from jetshift_core.helpers.common import clear_files, create_data_directory
     from jetshift_core.helpers.clcikhouse import get_last_id_from_clickhouse, truncate_table as truncate_clickhouse_table
+
+    js_logger = get_logger()
 
     table_name = params.source_table
     truncate_table = params.truncate_table
@@ -144,7 +169,7 @@ def fetch_and_extract_limit(params):
     # If primary_id is defined, apply the last_id filtering
     if primary_id:
         last_id = get_last_id_from_clickhouse(params.target_engine, table_name, primary_id)
-        print(f'Last ClickHouse {table_name} {primary_id}: ', last_id)
+        js_logger.info(f"Last ClickHouse {table_name} {primary_id}: {last_id}")
         stmt = stmt.where(table.c[primary_id] > last_id)
 
     # Apply limit and offset
@@ -162,9 +187,12 @@ def fetch_and_extract_limit(params):
 def fetch_and_extract_chunk(params):
     import pandas as pd
     import time
+    from jetshift_core.js_logger import get_logger
     from sqlalchemy import MetaData, Table, select, func
     from jetshift_core.helpers.common import clear_files, create_data_directory
     from jetshift_core.helpers.clcikhouse import get_last_id_from_clickhouse, truncate_table as truncate_clickhouse_table
+
+    js_logger = get_logger()
 
     table_name = params.source_table
     truncate_table = params.truncate_table
@@ -189,7 +217,7 @@ def fetch_and_extract_chunk(params):
     last_id = None
     if primary_id:
         last_id = get_last_id_from_clickhouse(params.target_engine, table_name, primary_id)
-        print(f'Last {table_name} {primary_id} (clickhouse): ', last_id)
+        js_logger.info(f"Last ClickHouse {table_name} {primary_id}: {last_id}")
         stmt_count = stmt_count.where(table.c[primary_id] > last_id)
 
     # Execute count properly
@@ -198,11 +226,11 @@ def fetch_and_extract_chunk(params):
 
     if total_rows > 0:
         total_rows -= extract_offset
-    print(f"Total rows in {table_name} (mysql): {total_rows}")
+    js_logger.info(f"Total rows in {table_name} (mysql): {total_rows}")
 
     loops = (total_rows + extract_chunk_size - 1) // extract_chunk_size
-    print(f"Total loops: {loops}")
-    print(f"\nExtracting data...")
+    js_logger.info(f"Total loops: {loops}")
+    js_logger.info(f"\nExtracting data...")
 
     # Extract in chunks
     for i in range(loops):
@@ -221,5 +249,5 @@ def fetch_and_extract_chunk(params):
         # Append chunk to CSV
         df.to_csv(output_path, mode='a', header=(i == 0), index=False)
 
-        print(f"Extracted {len(df)} rows from {table_name}. Loop {i + 1}/{loops}")
+        js_logger.info(f"Extracted {len(df)} rows from {table_name}. Loop {i + 1}/{loops}")
         time.sleep(sleep_interval)

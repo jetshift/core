@@ -2,6 +2,27 @@ from clickhouse_driver import Client
 from clickhouse_driver.errors import Error
 
 
+# Map ClickHouse types to pandas dtypes
+def get_clickhouse_to_pandas_type(ch_type):
+    ch_to_pd_type = {
+        'UInt64': 'Int64',
+        'UInt32': 'Int64',
+        'Int32': 'Int64',
+        'Int64': 'Int64',
+        'String': 'string',
+        'Nullable(String)': 'string',
+        'DateTime': 'datetime64[ns]',
+        'Nullable(DateTime)': 'datetime64[ns]',
+        'Date': 'datetime64[ns]',
+        'Nullable(Date)': 'datetime64[ns]',
+        'Float32': 'float',
+        'Nullable(Float32)': 'float',
+        'Float64': 'float',
+        'Nullable(Float64)': 'float',
+    }
+    return ch_to_pd_type.get(ch_type, 'string')  # default to 'string' if unknown
+
+
 def get_clickhouse_credentials():
     from config.database import clickhouse
     credentials = clickhouse()
@@ -113,20 +134,12 @@ def insert_into_clickhouse(target_engine, table_name, data_chunk):
     import pandas as pd
     from sqlalchemy import MetaData, Table, insert
     from jetshift_core.js_logger import get_logger
-    logger = get_logger(__name__)
+    js_logger = get_logger()
 
     last_inserted_id = None
 
     if not data_chunk.empty:
         try:
-            # # 🔄 Force datetime conversion for all potential datetime columns
-            # for col in data_chunk.columns:
-            #     if 'date' in col or 'time' in col:  # Optional: Match your column patterns
-            #         try:
-            #             data_chunk[col] = pd.to_datetime(data_chunk[col], errors='coerce')
-            #         except Exception as e:
-            #             logger.warning(f"Failed to convert column {col} to datetime: {e}")
-
             # Reflect the ClickHouse table
             metadata = MetaData()
             table = Table(table_name, metadata, autoload_with=target_engine)
@@ -144,10 +157,10 @@ def insert_into_clickhouse(target_engine, table_name, data_chunk):
             return True, last_inserted_id
 
         except Exception as e:
-            logger.error(f"{table_name}: Error inserting into ClickHouse. Error: {str(e)}")
+            js_logger.error(f"{table_name}: Error inserting into ClickHouse. Error: {str(e)}")
             return False, last_inserted_id
     else:
-        logger.error(f'{table_name}: No data to insert')
+        js_logger.info(f'{table_name}: No data to insert')
         return False, last_inserted_id
 
 
