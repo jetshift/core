@@ -18,7 +18,7 @@ init(autoreset=True)
 LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG").upper()
 
 # Base logger setup
-logger = logging.getLogger('jetshift_core')
+logger = logging.getLogger('jetshift')
 logger.setLevel(getattr(logging, LOG_LEVEL, logging.DEBUG))
 
 if not logger.hasHandlers():
