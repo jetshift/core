@@ -87,35 +87,76 @@ def load_data(params):
         js_logger.error(f"Load failed: {str(e)}")
         raise e
 
-    return True
+    return num_rows
 
 
 @flow(name="MySQL to ClickHouse Migration")
 def mysql_to_clickhouse_flow(migrate_table_obj, task):
     js_logger = get_logger()
+    from sqlalchemy import text
     from app.models import MigrateTable
     from app.services.migrate.common import AttrDict
 
     js_logger.info(f"Started {migrate_table_obj.title} flow.")
 
+    # Create sqlalchemy engines
+    source_engine = create_database_engine(migrate_table_obj.source_db)
+    target_engine = create_database_engine(migrate_table_obj.target_db)
+
+    # Counting source table's rows
+    with source_engine.connect() as connection:
+        source_count_result = connection.execute(text(f"SELECT COUNT(*) FROM {task.source_table}"))
+    total_source_items = source_count_result.scalar() or 0
+    js_logger.info(f"Total source items ({task.source_table}): {total_source_items}")
+
+    # Counting target table's rows
+    with target_engine.connect() as connection:
+        target_count_result = connection.execute(text(f"SELECT COUNT(*) FROM {task.target_table}"))
+    total_target_items = target_count_result.scalar() or 0
+    js_logger.info(f"Total target items ({task.target_table}): {total_target_items}")
+
+    # Compare
+    if total_source_items == total_target_items:
+        # Update task
+        task.status = 'completed'
+        task.save()
+
+        js_logger.info(f"Source and target tables match, skipping.")
+        return True
+
+    # Prepare parameters
     params = AttrDict(dict(
         source_db=migrate_table_obj.source_db,
         target_db=migrate_table_obj.target_db,
-        source_engine=create_database_engine(migrate_table_obj.source_db),
-        target_engine=create_database_engine(migrate_table_obj.target_db),
+        source_engine=source_engine,
+        target_engine=target_engine,
         source_table=task.source_table,
         target_table=task.target_table,
-        live_schema=False,
-        primary_id='id',
-        extract_offset=0,
-        extract_limit=10,
-        extract_chunk_size=30,
-        truncate_table=False,
-        load_chunk_size=10,
-        sleep_interval=1
+        # Get config
+        live_schema=bool(task.config.get('live_schema', False)),
+        primary_id=task.config.get('primary_id', None),
+        extract_offset=int(task.config.get('extract_offset', 0)),
+        extract_limit=int(task.config.get('extract_limit', 10)),
+        extract_chunk_size=int(task.config.get('extract_chunk_size', 50)),
+        truncate_table=bool(task.config.get('truncate_table', False)),
+        load_chunk_size=int(task.config.get('load_chunk_size', 10)),
+        sleep_interval=int(task.config.get('sleep_interval', 1)),
     ))
     params.output_path = f"data/{params.source_table}.csv"
 
-    # Extract and load data
+    # Run tasks
     extract_data(params)
-    load_data(params)
+    total_loaded_items = load_data(params)
+
+    js_logger.info(f"Total migrated items this time: {total_loaded_items}")
+
+    total_migrated_items = total_target_items + total_loaded_items
+    js_logger.info(f"Total migrated items: {total_migrated_items}")
+
+    # Update task
+    if total_source_items == total_migrated_items:
+        task.status = 'completed'
+
+    task.stats['total_source_items'] = total_source_items
+    task.stats['total_target_items'] = total_migrated_items
+    task.save()
